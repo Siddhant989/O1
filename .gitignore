@@ -1,0 +1,5 @@
+# FAISS Index
+faiss_index/
+
+# Environment variables
+.env
