@@ -34,3 +34,4 @@ SpeechRecognition
 pydub
 noisereduce
 gTTS==2.5.1
+sentence-transformers
