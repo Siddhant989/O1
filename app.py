@@ -18,7 +18,6 @@ from scipy import signal
 import speech_recognition as sr
 from pydub import AudioSegment
 import noisereduce as nr
-from langchain_huggingface import HuggingFaceEmbeddings
 
 # Apply nest_asyncio to allow nested event loops
 
