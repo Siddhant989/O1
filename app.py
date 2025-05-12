@@ -18,6 +18,7 @@ from scipy import signal
 import speech_recognition as sr
 from pydub import AudioSegment
 import noisereduce as nr
+from langchain_huggingface import HuggingFaceEmbeddings
 
 # Apply nest_asyncio to allow nested event loops
 
@@ -78,7 +79,7 @@ def display_graph(graph_data):
         # Display the image
         st.image(image, use_column_width=True)
 
-                from langchain_huggingface import HuggingFaceEmbeddings
+        
 
 def display_pdf_images():
     """Display all extracted PDF images."""
