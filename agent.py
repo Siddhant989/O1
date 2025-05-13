@@ -44,6 +44,7 @@ import soundfile as sf
 import numpy as np
 from scipy import signal
 import noisereduce as nr
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -120,6 +121,530 @@ class Agent:
         self.session = None
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
         self.max_file_size = 4 * 1024 * 1024  # 4MB in bytes
+        
+        # Initialize prompts for different file types
+        self.file_prompts = {
+            'application/pdf': {
+                'summary': """
+                You are an expert document analyst. Please provide a comprehensive summary of this PDF document.
+
+                Guidelines for Summary:
+                1. Document Overview:
+                   - Main topic and purpose
+                   - Document type and format
+                   - Target audience
+                   - Key objectives
+
+                2. Content Analysis:
+                   - Main arguments and key points
+                   - Supporting evidence and examples
+                   - Important findings or conclusions
+                   - Any significant data or statistics
+                   - Methodologies used (if applicable)
+
+                3. Critical Elements:
+                   - Key takeaways
+                   - Recommendations or implications
+                   - Limitations or constraints
+                   - Future considerations
+
+                4. Structure and Organization:
+                   - Document layout
+                   - Section organization
+                   - Flow of information
+                   - Visual elements (if any)
+
+                Please ensure the summary is:
+                - Clear and well-structured
+                - Concise but comprehensive
+                - Focused on the most important information
+                - Easy to understand
+                - Properly formatted with sections and bullet points
+
+                Content:
+                {content}
+
+                Summary:
+                """,
+                'analysis': """
+                You are an expert document analyst. Please perform a detailed analysis of this PDF document.
+
+                Guidelines for Analysis:
+                1. Document Structure:
+                   - Organization and layout
+                   - Section hierarchy
+                   - Flow and coherence
+                   - Visual elements and formatting
+                   - Navigation and accessibility
+
+                2. Content Evaluation:
+                   - Main arguments and their validity
+                   - Supporting evidence quality
+                   - Data analysis and interpretation
+                   - Methodology assessment
+                   - Conclusion reliability
+
+                3. Writing Style:
+                   - Tone and voice
+                   - Language complexity
+                   - Clarity and precision
+                   - Technical accuracy
+                   - Professional standards
+
+                4. Critical Assessment:
+                   - Strengths and weaknesses
+                   - Bias and objectivity
+                   - Completeness and gaps
+                   - Credibility and reliability
+                   - Potential improvements
+
+                5. Practical Implications:
+                   - Real-world applications
+                   - Industry relevance
+                   - Future implications
+                   - Risk considerations
+                   - Implementation challenges
+
+                Please provide:
+                - Detailed analysis of each aspect
+                - Specific examples and evidence
+                - Clear recommendations
+                - Actionable insights
+                - Professional assessment
+
+                Content:
+                {content}
+
+                Analysis:
+                """
+            },
+            'text/plain': {
+                'summary': """
+                You are an expert text analyst. Please provide a comprehensive summary of this text document.
+
+                Guidelines for Summary:
+                1. Document Overview:
+                   - Main topic and purpose
+                   - Document type and format
+                   - Target audience
+                   - Key objectives
+
+                2. Content Analysis:
+                   - Main ideas and themes
+                   - Key points and arguments
+                   - Supporting evidence
+                   - Important details
+                   - Examples and illustrations
+
+                3. Critical Elements:
+                   - Key takeaways
+                   - Main conclusions
+                   - Important implications
+                   - Notable insights
+                   - Action items (if any)
+
+                4. Structure and Flow:
+                   - Organization of ideas
+                   - Logical flow
+                   - Section relationships
+                   - Transition points
+
+                Please ensure the summary is:
+                - Clear and well-structured
+                - Concise but comprehensive
+                - Focused on key information
+                - Easy to understand
+                - Properly formatted
+
+                Content:
+                {content}
+
+                Summary:
+                """,
+                'analysis': """
+                You are an expert text analyst. Please perform a detailed analysis of this text document.
+
+                Guidelines for Analysis:
+                1. Content Evaluation:
+                   - Main arguments and their validity
+                   - Supporting evidence quality
+                   - Information accuracy
+                   - Completeness of coverage
+                   - Depth of analysis
+
+                2. Writing Style:
+                   - Tone and voice
+                   - Language complexity
+                   - Clarity and precision
+                   - Technical accuracy
+                   - Professional standards
+
+                3. Structure and Organization:
+                   - Logical flow
+                   - Section coherence
+                   - Transition effectiveness
+                   - Information hierarchy
+                   - Formatting impact
+
+                4. Critical Assessment:
+                   - Strengths and weaknesses
+                   - Bias and objectivity
+                   - Completeness and gaps
+                   - Credibility and reliability
+                   - Potential improvements
+
+                5. Practical Implications:
+                   - Real-world applications
+                   - Industry relevance
+                   - Future implications
+                   - Risk considerations
+                   - Implementation challenges
+
+                Please provide:
+                - Detailed analysis of each aspect
+                - Specific examples and evidence
+                - Clear recommendations
+                - Actionable insights
+                - Professional assessment
+
+                Content:
+                {content}
+
+                Analysis:
+                """
+            },
+            'application/vnd.ms-excel': {
+                'summary': """
+                You are an expert data analyst. Please provide a comprehensive summary of this spreadsheet data.
+
+                Guidelines for Summary:
+                1. Data Overview:
+                   - Dataset structure and organization
+                   - Key variables and metrics
+                   - Data types and formats
+                   - Time period covered
+                   - Data sources
+
+                2. Statistical Analysis:
+                   - Key metrics and statistics
+                   - Central tendencies
+                   - Distribution patterns
+                   - Correlation insights
+                   - Significant findings
+
+                3. Trends and Patterns:
+                   - Notable trends
+                   - Seasonal patterns
+                   - Anomalies or outliers
+                   - Growth or decline indicators
+                   - Comparative insights
+
+                4. Data Quality:
+                   - Completeness assessment
+                   - Accuracy evaluation
+                   - Consistency check
+                   - Reliability indicators
+                   - Potential issues
+
+                Please ensure the summary is:
+                - Clear and well-structured
+                - Data-driven and precise
+                - Focused on key insights
+                - Supported by evidence
+                - Actionable and practical
+
+                Content:
+                {content}
+
+                Summary:
+                """,
+                'analysis': """
+                You are an expert data analyst. Please perform a detailed analysis of this spreadsheet data.
+
+                Guidelines for Analysis:
+                1. Data Quality Assessment:
+                   - Completeness and coverage
+                   - Accuracy and precision
+                   - Consistency and reliability
+                   - Data integrity
+                   - Potential biases
+
+                2. Statistical Analysis:
+                   - Descriptive statistics
+                   - Inferential statistics
+                   - Correlation analysis
+                   - Regression insights
+                   - Significance testing
+
+                3. Pattern Recognition:
+                   - Trend analysis
+                   - Seasonal patterns
+                   - Cyclical behavior
+                   - Anomaly detection
+                   - Predictive indicators
+
+                4. Business Intelligence:
+                   - Key performance indicators
+                   - Business impact
+                   - Risk assessment
+                   - Opportunity identification
+                   - Strategic implications
+
+                5. Technical Evaluation:
+                   - Data structure efficiency
+                   - Formula accuracy
+                   - Calculation reliability
+                   - Visualization effectiveness
+                   - Technical limitations
+
+                Please provide:
+                - Detailed analysis of each aspect
+                - Statistical evidence
+                - Clear recommendations
+                - Actionable insights
+                - Professional assessment
+
+                Content:
+                {content}
+
+                Analysis:
+                """
+            },
+            'text/csv': {
+                'summary': """
+                You are an expert data analyst. Please provide a comprehensive summary of this CSV data.
+
+                Guidelines for Summary:
+                1. Data Overview:
+                   - Dataset structure and organization
+                   - Key variables and metrics
+                   - Data types and formats
+                   - Time period covered
+                   - Data sources
+
+                2. Statistical Analysis:
+                   - Key metrics and statistics
+                   - Central tendencies
+                   - Distribution patterns
+                   - Correlation insights
+                   - Significant findings
+
+                3. Trends and Patterns:
+                   - Notable trends
+                   - Seasonal patterns
+                   - Anomalies or outliers
+                   - Growth or decline indicators
+                   - Comparative insights
+
+                4. Data Quality:
+                   - Completeness assessment
+                   - Accuracy evaluation
+                   - Consistency check
+                   - Reliability indicators
+                   - Potential issues
+
+                Please ensure the summary is:
+                - Clear and well-structured
+                - Data-driven and precise
+                - Focused on key insights
+                - Supported by evidence
+                - Actionable and practical
+
+                Content:
+                {content}
+
+                Summary:
+                """,
+                'analysis': """
+                You are an expert data analyst. Please perform a detailed analysis of this CSV data.
+
+                Guidelines for Analysis:
+                1. Data Quality Assessment:
+                   - Completeness and coverage
+                   - Accuracy and precision
+                   - Consistency and reliability
+                   - Data integrity
+                   - Potential biases
+
+                2. Statistical Analysis:
+                   - Descriptive statistics
+                   - Inferential statistics
+                   - Correlation analysis
+                   - Regression insights
+                   - Significance testing
+
+                3. Pattern Recognition:
+                   - Trend analysis
+                   - Seasonal patterns
+                   - Cyclical behavior
+                   - Anomaly detection
+                   - Predictive indicators
+
+                4. Business Intelligence:
+                   - Key performance indicators
+                   - Business impact
+                   - Risk assessment
+                   - Opportunity identification
+                   - Strategic implications
+
+                5. Technical Evaluation:
+                   - Data structure efficiency
+                   - Format consistency
+                   - Processing requirements
+                   - Integration capabilities
+                   - Technical limitations
+
+                Please provide:
+                - Detailed analysis of each aspect
+                - Statistical evidence
+                - Clear recommendations
+                - Actionable insights
+                - Professional assessment
+
+                Content:
+                {content}
+
+                Analysis:
+                """
+            },
+            'image/': {
+                'summary': """
+                You are an expert image analyst. Please provide a comprehensive description of this image.
+
+                Guidelines for Description:
+                1. Visual Elements:
+                   - Main subjects and objects
+                   - Composition and layout
+                   - Colors and lighting
+                   - Visual hierarchy
+                   - Key focal points
+
+                2. Technical Aspects:
+                   - Image quality
+                   - Resolution and clarity
+                   - Lighting conditions
+                   - Focus and depth
+                   - Technical execution
+
+                3. Context and Setting:
+                   - Environment and location
+                   - Time period or era
+                   - Cultural context
+                   - Historical significance
+                   - Environmental factors
+
+                4. Notable Details:
+                   - Important features
+                   - Unique characteristics
+                   - Significant elements
+                   - Hidden details
+                   - Special effects
+
+                Please ensure the description is:
+                - Clear and well-structured
+                - Detailed but concise
+                - Focused on key elements
+                - Technically accurate
+                - Contextually relevant
+
+                Image Analysis:
+                """,
+                'analysis': """
+                You are an expert image analyst. Please perform a detailed analysis of this image.
+
+                Guidelines for Analysis:
+                1. Visual Composition:
+                   - Layout and structure
+                   - Balance and symmetry
+                   - Visual hierarchy
+                   - Focal points
+                   - Negative space
+
+                2. Technical Evaluation:
+                   - Image quality
+                   - Resolution and clarity
+                   - Lighting and exposure
+                   - Focus and depth
+                   - Technical execution
+
+                3. Artistic Elements:
+                   - Color theory
+                   - Composition rules
+                   - Style and technique
+                   - Creative elements
+                   - Artistic intent
+
+                4. Content Analysis:
+                   - Subject matter
+                   - Symbolism and meaning
+                   - Cultural context
+                   - Historical significance
+                   - Emotional impact
+
+                5. Professional Assessment:
+                   - Technical proficiency
+                   - Artistic merit
+                   - Communication effectiveness
+                   - Target audience appeal
+                   - Overall impact
+
+                Please provide:
+                - Detailed analysis of each aspect
+                - Technical insights
+                - Artistic evaluation
+                - Cultural context
+                - Professional assessment
+
+                Image Analysis:
+                """
+            }
+        }
+        
+        # Universal prompt for any file type
+        self.universal_prompt = """
+        You are an expert content analyst. Please provide a comprehensive analysis of this content.
+
+        Guidelines for Analysis:
+        1. Content Overview:
+           - Main topic and purpose
+           - Content type and format
+           - Target audience
+           - Key objectives
+           - Overall structure
+
+        2. Detailed Analysis:
+           - Main points and arguments
+           - Supporting evidence
+           - Key findings
+           - Important details
+           - Technical aspects
+
+        3. Critical Evaluation:
+           - Strengths and weaknesses
+           - Completeness and gaps
+           - Accuracy and reliability
+           - Bias and objectivity
+           - Potential improvements
+
+        4. Practical Implications:
+           - Real-world applications
+           - Industry relevance
+           - Future implications
+           - Risk considerations
+           - Implementation challenges
+
+        Please ensure the analysis is:
+        - Clear and well-structured
+        - Comprehensive and detailed
+        - Evidence-based
+        - Actionable
+        - Professional
+
+        Content:
+        {content}
+
+        Analysis:
+        """
         
         # Register cleanup
         atexit.register(self.cleanup)
@@ -683,11 +1208,71 @@ class Agent:
         except Exception as e:
             raise Exception(f"Error creating conversational chain: {e}")
 
+    def get_prompt_for_file(self, file_type, analysis_type='summary'):
+        """Get the appropriate prompt for a given file type and analysis type."""
+        # Check for exact file type match
+        if file_type in self.file_prompts:
+            return self.file_prompts[file_type].get(analysis_type, self.universal_prompt)
+        
+        # Check for partial match (e.g., for image types)
+        for key in self.file_prompts:
+            if file_type.startswith(key):
+                return self.file_prompts[key].get(analysis_type, self.universal_prompt)
+        
+        # Return universal prompt if no specific prompt is found
+        return self.universal_prompt
+
     async def process_user_input_async(self, user_question, recent_file_info=None):
         try:
             memory_context = self.get_relevant_context(user_question)
             
-            # Enhanced query processing
+            # First, check if we have uploaded files to analyze
+            if st.session_state.uploaded_files:
+                # Get the most recent file
+                recent_file = st.session_state.uploaded_files[-1]
+                
+                # Handle image analysis
+                if recent_file.type.startswith('image/'):
+                    try:
+                        analysis = self.process_image(recent_file)
+                        return analysis
+                    except Exception as e:
+                        st.warning(f"Could not analyze image: {str(e)}")
+                
+                # Handle document analysis
+                elif recent_file.type in ['application/pdf', 'text/plain', 'application/vnd.ms-excel', 
+                                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                        'text/csv']:
+                    try:
+                        # Get the content from the file
+                        content = self.get_text_from_file(recent_file)
+                        
+                        # Determine if this is a summary or analysis request
+                        analysis_type = 'analysis' if any(word in user_question.lower() 
+                            for word in ['analyze', 'analysis', 'examine', 'evaluate', 'assess']) else 'summary'
+                        
+                        # Get the appropriate prompt for the file type
+                        prompt_template = self.get_prompt_for_file(recent_file.type, analysis_type)
+                        
+                        # Format the prompt with the content
+                        prompt = prompt_template.format(content=content)
+                        
+                        # Get model configuration
+                        model_config = self.get_model_config()
+                        model = ChatGoogleGenerativeAI(
+                            model=model_config['model'],
+                            temperature=0.3,  # Lower temperature for more focused responses
+                            google_api_key=GOOGLE_API_KEY
+                        )
+                        
+                        # Generate response
+                        response = model.invoke(prompt)
+                        return response.content
+                        
+                    except Exception as e:
+                        st.warning(f"Could not analyze document: {str(e)}")
+            
+            # Enhanced query processing for other cases
             query_type = self._analyze_query_type(user_question)
             
             # Handle different types of queries
@@ -703,18 +1288,47 @@ class Agent:
             # Regular processing for other queries
             vector_store = self.load_vector_store()
             if not vector_store:
-                raise Exception("No content has been processed yet. Please upload and process files first.")
+                # Only perform web search if no local content is available
+                try:
+                    web_results = await self.search_web_async(user_question)
+                    web_context = "\n".join([f"Source {i+1}: {result['body']}" for i, result in enumerate(web_results)])
+                    
+                    if recent_file_info:
+                        web_context += f"\nMost recently uploaded file: {recent_file_info}"
+                    
+                    chain = self.get_conversational_chain()
+                    if not chain:
+                        raise Exception("Failed to create conversational chain")
+
+                    memory_context_str = "\n".join([
+                        f"Previous interaction at {ctx['timestamp']}: {ctx['response']}"
+                        for ctx in memory_context
+                    ])
+
+                    response = chain(
+                        {
+                            "input_documents": [],
+                            "memory_context": memory_context_str,
+                            "web_search": web_context,
+                            "question": user_question
+                        },
+                        return_only_outputs=True
+                    )
+                    
+                    context = {
+                        'document_info': recent_file_info,
+                        'web_search': web_context,
+                        'timestamp': datetime.datetime.now()
+                    }
+                    self.update_memory(user_question, response["output_text"], context)
+                    
+                    return response["output_text"]
+                except Exception as e:
+                    raise Exception(f"Error during web search: {str(e)}")
             
             docs = vector_store.similarity_search(user_question)
             if not docs:
                 raise Exception("No relevant content found in the processed files.")
-            
-            web_search_task = self.search_web_async(user_question)
-            web_results = await web_search_task
-            web_context = "\n".join([f"Source {i+1}: {result['body']}" for i, result in enumerate(web_results)])
-            
-            if recent_file_info:
-                web_context += f"\nMost recently uploaded file: {recent_file_info}"
             
             chain = self.get_conversational_chain()
             if not chain:
@@ -729,7 +1343,7 @@ class Agent:
                 {
                     "input_documents": docs,
                     "memory_context": memory_context_str,
-                    "web_search": web_context,
+                    "web_search": "",  # Don't use web search for local content
                     "question": user_question
                 },
                 return_only_outputs=True
@@ -737,7 +1351,6 @@ class Agent:
             
             context = {
                 'document_info': recent_file_info,
-                'web_search': web_context,
                 'timestamp': datetime.datetime.now()
             }
             self.update_memory(user_question, response["output_text"], context)
