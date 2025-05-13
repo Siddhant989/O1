@@ -6,7 +6,9 @@ from core.graph import Graph
 import pandas as pd
 import uuid
 import time
-from main import main as experimental_agent_main
+
+# from main import main as experimental_agent_main
+from experimental_agent.app import main as experimental_agent_main
 
 
 def format_user_bubble(query, timestamp):
@@ -114,7 +116,7 @@ def show_agentic_chat_interface():
     if "first_prompt" not in st.session_state:
         st.session_state.first_prompt = None
 
-    col1, col2, col3 = st.columns([5, 1, 1.1])
+    col1, col2, col3, col4 = st.columns([1.5, 3.5, 1, 1.2])
     with col1:
         st.button(
             status,
@@ -123,29 +125,44 @@ def show_agentic_chat_interface():
             key="status_button",
         )
     with col2:
-        if st.button(
-            "🔁 Reset Chat",
-            help="Reset Chat and Memory",
-            use_container_width=True,
-            key="reset_button",
-            disabled=not st.session_state.chat_log,
-        ):
-            st.session_state.chat_log = []
-            st.session_state.message_ids = set()
-            st.session_state.charts_to_show = set()
-            st.session_state.reset_successful = False
-
-            # Optional: clear memory
-            app = st.session_state.graph_app
-            if hasattr(app, "checkpointer") and app.checkpointer is not None:
-                try:
-                    app.checkpointer.delete_thread(st.session_state.thread_id)
-                    st.session_state.reset_successful = True
-                except Exception as e:
-                    st.session_state.reset_error = f" Could not clear memory: {str(e)}"
-
-            st.rerun()
+        if not st.session_state.show_experimental and st.session_state.first_prompt:
+            st.markdown(
+                """
+        <div style='text-align:center;padding-top:-1%; margin-top:-1%;'>
+        <h3>Loan Origination Data Analytics Tool</h3>
+        </div>
+        """,
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown("""""")
     with col3:
+        if not st.session_state.show_experimental:
+            if st.button(
+                "🔁 Reset Chat",
+                help="Reset Chat and Memory",
+                use_container_width=True,
+                key="reset_button",
+                disabled=not st.session_state.chat_log,
+            ):
+                st.session_state.chat_log = []
+                st.session_state.message_ids = set()
+                st.session_state.charts_to_show = set()
+                st.session_state.reset_successful = False
+
+                # Optional: clear memory
+                app = st.session_state.graph_app
+                if hasattr(app, "checkpointer") and app.checkpointer is not None:
+                    try:
+                        app.checkpointer.delete_thread(st.session_state.thread_id)
+                        st.session_state.reset_successful = True
+                    except Exception as e:
+                        st.session_state.reset_error = (
+                            f" Could not clear memory: {str(e)}"
+                        )
+
+                st.rerun()
+    with col4:
         toggle_label = (
             "🧪 Experimental Agent"
             if not st.session_state.show_experimental
@@ -160,7 +177,7 @@ def show_agentic_chat_interface():
         experimental_agent_main()
         return
 
-    st.markdown("---")
+    # st.markdown("---")
     if st.session_state.get("reset_successful"):
         st.toast("✅ Chat reset successfully.")
         st.session_state.thread_id = str(uuid.uuid4())
@@ -171,12 +188,6 @@ def show_agentic_chat_interface():
         del st.session_state.reset_error
 
     if "data_loaded" not in st.session_state or not st.session_state.data_loaded:
-        # with st.spinner("🔄 Loading data..."):
-        #     from core.data_loader import Data
-
-        #     st.session_state.data = Data()
-        #     st.session_state.data_loaded = True
-        #     st.rerun()
         st.markdown(
             '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">',
             unsafe_allow_html=True,
@@ -206,6 +217,7 @@ def show_agentic_chat_interface():
             <div class="loading-box">
                 <div class="loading-card">
                     <p><span class="spinner-border me-2"></span> Loading data... Please wait</p>
+                    <p style="font-size:14px; margin-top:-1%;">Home Mortgage Disclosure Act</p>
                 </div>
             </div>
             """,
@@ -270,7 +282,7 @@ def show_agentic_chat_interface():
 
     elif st.session_state.first_prompt is None:
         # --- Centered Input Prompt (when chat is empty) ---
-        st.markdown("<div style='margin-top: 3vh;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 5vh;'></div>", unsafe_allow_html=True)
         st.markdown(
             """
         <div style='text-align: center;margin-bottom:4%;'>
@@ -302,13 +314,6 @@ def show_agentic_chat_interface():
         first_prompt = st.text_input(
             "Ask your question...", placeholder="Type your question here..."
         )
-        if not st.session_state.get("data_loaded"):
-            with st.spinner("🔄 Loading data..."):
-                from core.data_loader import Data
-
-                st.session_state.data = Data()
-                st.session_state.data_loaded = True
-                st.rerun()
         if first_prompt:
             # Store and force UI shift to st.chat_input
             st.session_state.first_prompt = first_prompt
