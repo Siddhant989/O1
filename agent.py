@@ -29,14 +29,11 @@ import plotly.graph_objects as go
 import json
 import base64
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from pytube import YouTube
-from youtube_transcript_api import YouTubeTranscriptApi
 import speech_recognition as sr
 from pydub import AudioSegment
 import fitz  # PyMuPDF
 import pygments
 from pygments import lexers
-from pygments.formatters import HtmlFormatter
 import tempfile
 from gtts import gTTS
 import librosa
