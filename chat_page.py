@@ -270,7 +270,15 @@ def show_agentic_chat_interface():
 
     elif st.session_state.first_prompt is None:
         # --- Centered Input Prompt (when chat is empty) ---
-        st.markdown("<div style='margin-top: 20vh;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 3vh;'></div>", unsafe_allow_html=True)
+         st.markdown(
+            """
+        <div style='text-align: center;margin-bottom:4%;'>
+        <h2>Lending Risk Analysis and Approval Prediction</h2>
+        <h4 style="color:gray; margin-top:-10px;">Origination Data Analytics Tool</h4></div>
+        """,
+            unsafe_allow_html=True,
+        )
         st.markdown(
             "<div style='text-align: center; font-size: 20px; color: gray; margin-top:-10px;'>What I can help with 👇</div>",
             unsafe_allow_html=True,
