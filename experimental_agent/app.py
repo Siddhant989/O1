@@ -896,7 +896,7 @@ def main():
                         response = f"Error processing audio: {str(e)}"
                 else:
                     # Process regular queries
-                    with st.spinner("🤔 Analyzing your question..."):
+                    with st.spinner("Analyzing..."):
                         response = asyncio.run(
                             st.session_state.agent.process_user_input_async(
                                 user_question, recent_file_info

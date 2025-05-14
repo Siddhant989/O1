@@ -1124,9 +1124,17 @@ class Agent:
 
             # Regular processing for other queries
             vector_store = self.load_vector_store()
-            if not vector_store:
-                # Only perform web search if no local content is available
+            docs = None
+            
+            if vector_store:
+                docs = vector_store.similarity_search(user_question)
+            
+            # Perform web search if no vector store or no relevant docs found
+            if not vector_store or not docs:
                 try:
+                    # Inform user that we're searching the web
+                    web_search_msg = "No relevant information found in the uploaded documents. Searching the web for answers..."
+                    
                     web_results = await self.search_web_async(user_question)
                     web_context = "\n".join(
                         [
@@ -1168,14 +1176,12 @@ class Agent:
                     }
                     self.update_memory(user_question, response["output_text"], context)
 
-                    return response["output_text"]
+                    # Prepend the web search message to the response
+                    return web_search_msg + "\n\n" + response["output_text"]
                 except Exception as e:
                     raise Exception(f"Error during web search: {str(e)}")
 
-            docs = vector_store.similarity_search(user_question)
-            if not docs:
-                raise Exception("No relevant content found in the processed files.")
-
+            # If we have relevant docs from vector store, use them
             chain = self.get_conversational_chain()
             if not chain:
                 raise Exception("Failed to create conversational chain")
