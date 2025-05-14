@@ -467,11 +467,9 @@ def format_assistant_bubble_typewrite(answer: str, typewriter: bool = False):
 
 
 def main():
-    # Set page config with max upload size of 4MB
-    st.set_page_config(
-        page_title="Experimental Agent",
-        max_upload_size_mb=4
-    )
+    # Only set page config if running directly
+    # if __name__ == "__main__":
+    #     st.set_page_config("Experimental Agent")
 
     st.title("Experimental Agent")
 
@@ -898,11 +896,12 @@ def main():
                         response = f"Error processing audio: {str(e)}"
                 else:
                     # Process regular queries
-                    response = asyncio.run(
-                        st.session_state.agent.process_user_input_async(
-                            user_question, recent_file_info
+                    with st.spinner("🤔 Analyzing your question..."):
+                        response = asyncio.run(
+                            st.session_state.agent.process_user_input_async(
+                                user_question, recent_file_info
+                            )
                         )
-                    )
 
                 # Add response to chat history
                 st.session_state.chat_history.append(
