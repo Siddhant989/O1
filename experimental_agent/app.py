@@ -467,9 +467,11 @@ def format_assistant_bubble_typewrite(answer: str, typewriter: bool = False):
 
 
 def main():
-    # Only set page config if running directly
-    # if __name__ == "__main__":
-    #     st.set_page_config("Experimental Agent")
+    # Set page config with max upload size of 4MB
+    st.set_page_config(
+        page_title="Experimental Agent",
+        max_upload_size_mb=4
+    )
 
     st.title("Experimental Agent")
 
@@ -546,35 +548,6 @@ def main():
                 "jpg",
                 "jpeg",
                 "png",
-                "py",
-                "js",
-                "jsx",
-                "ts",
-                "tsx",
-                "java",
-                "cpp",
-                "c",
-                "cs",
-                "php",
-                "rb",
-                "go",
-                "rs",
-                "swift",
-                "kt",
-                "scala",
-                "html",
-                "css",
-                "sql",
-                "sh",
-                "md",
-                "json",
-                "xml",
-                "yaml",
-                "yml",
-                "toml",
-                "ini",
-                "env",
-                "ipynb",
                 "wav",
                 "mp3",
                 "ogg",
@@ -725,8 +698,6 @@ def main():
         else:
             assistant_html = format_assistant_bubble(message["content"], timestamp)
             st.markdown(assistant_html, unsafe_allow_html=True)
-            if "model_used" in message:
-                st.caption(f"Model used: {message['model_used']}")
             if "audio" in message:
                 st.audio(message["audio"])
 
@@ -907,7 +878,7 @@ def main():
                                         and "transcribe" not in operations
                                     ):
                                         st.audio(processed_audio.export().read())
-                                    st.caption(f"Model used: {model_config['model']}")
+                                    
 
                                     # Clean up temporary file
                                     os.unlink(temp_wav.name)
@@ -945,7 +916,7 @@ def main():
                 # Display response with styled bubble
                 assistant_html = format_assistant_bubble(response, timestamp)
                 st.markdown(assistant_html, unsafe_allow_html=True)
-                st.caption(f"Model used: {model_config['model']}")
+                
 
                 st.rerun()
             except Exception as e:
