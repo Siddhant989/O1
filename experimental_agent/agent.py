@@ -1216,28 +1216,8 @@ class Agent:
 
     def _post_process_response(self, response, question):
         """Post-process the response to ensure it's relevant to the question."""
-        # Extract the main question type
-        question_type = self._analyze_query_type(question)
-        
-        # Add a clear section header based on question type
-        if question_type == "visualization":
-            header = "Visualization Analysis:\n"
-        elif question_type == "comparison":
-            header = "Comparative Analysis:\n"
-        elif question_type == "prediction":
-            header = "Predictive Analysis:\n"
-        elif question_type == "analysis":
-            header = "Detailed Analysis:\n"
-        else:
-            header = "Response:\n"
-        
-        # Add a summary of what was analyzed
-        summary = f"Based on your question about {self._get_question_topic(question)}, here's the analysis:\n\n"
-        
-        # Combine all parts
-        final_response = f"{header}{summary}{response}"
-        
-        return final_response
+        # Return the response directly without any prefix
+        return response.strip()
 
     def _get_question_topic(self, question):
         """Extract the main topic from the question."""
