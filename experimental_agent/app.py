@@ -617,6 +617,18 @@ def main():
 
         # Only process content when the button is clicked
         if process_button:
+            # Reset all chat-related session state
+            st.session_state.chat_history = []
+            if 'messages' in st.session_state:
+                del st.session_state.messages
+            if 'preview_states' in st.session_state:
+                del st.session_state.preview_states
+            if 'first_prompt' in st.session_state:
+                st.session_state.first_prompt = None
+            
+            # Clear any existing chat interface elements
+            st.empty()
+            
             with st.spinner("Processing..."):
                 all_text = ""
 
@@ -896,7 +908,7 @@ def main():
                         response = f"Error processing audio: {str(e)}"
                 else:
                     # Process regular queries
-                    with st.spinner("🤔 Analyzing your question..."):
+                    with st.spinner("Analyzing..."):
                         response = asyncio.run(
                             st.session_state.agent.process_user_input_async(
                                 user_question, recent_file_info
