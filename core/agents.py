@@ -245,7 +245,13 @@ class FairLendingAgent:
 
         if "[SEARCH_REQUIRED]" in content:
             # Call DuckDuckGo
-            search_snippet = self.tools[0].run(question)
+            try:
+                search_snippet = self.tools[0].run(question)
+            except Exception as e:
+                print(f"Error in search: {e}")
+                search_snippet = (
+                    "I am unable to provide Internet Search Results at this time."
+                )
             result = {
                 "approach": "internet search",
                 "answer": search_snippet,
@@ -393,7 +399,11 @@ class OutOfDomainAgent:
         )
         response = self.llm.invoke(prompt_template.invoke({"question": question}))
         if "[SEARCH_REQUIRED]" in response.content:
-            search_result = self.tools[0].run(question)
+            try:
+                search_result = self.tools[0].run(question)
+            except Exception as e:
+                print(f"Error in search: {e}")
+                search_result = "This question is out of domain. Please ask a question related to mortgage data analysis. I am unable to provide Internet search results at this time."
             return AIMessage(content=search_result)
         else:
             return response
