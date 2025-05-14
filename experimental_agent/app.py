@@ -617,6 +617,18 @@ def main():
 
         # Only process content when the button is clicked
         if process_button:
+            # Reset all chat-related session state
+            st.session_state.chat_history = []
+            if 'messages' in st.session_state:
+                del st.session_state.messages
+            if 'preview_states' in st.session_state:
+                del st.session_state.preview_states
+            if 'first_prompt' in st.session_state:
+                st.session_state.first_prompt = None
+            
+            # Clear any existing chat interface elements
+            st.empty()
+            
             with st.spinner("Processing..."):
                 all_text = ""
 

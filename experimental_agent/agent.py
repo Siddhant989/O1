@@ -46,27 +46,34 @@ GOOGLE_API_KEY = os.getenv("LLM_API_KEY")
 
 # Define available Gemini models
 GEMINI_MODELS = {
-    "gemini-1.5-flash": {
-        "model": "gemini-1.5-flash",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 10000,
-        "chunk_overlap": 1000,
+    'gemini-2.0-flash': {
+        'model': 'gemini-2.0-flash',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 12000,
+        'chunk_overlap': 1200
     },
-    "gemini-1.5-pro": {
-        "model": "gemini-1.5-pro",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 15000,
-        "chunk_overlap": 1500,
+    'gemini-1.5-flash': {
+        'model': 'gemini-1.5-flash',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 10000,
+        'chunk_overlap': 1000
     },
-    "gemini-pro": {
-        "model": "gemini-pro",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 12000,
-        "chunk_overlap": 1200,
+    'gemini-1.5-pro': {
+        'model': 'gemini-1.5-pro',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 15000,
+        'chunk_overlap': 1500
     },
+    'gemini-pro': {
+        'model': 'gemini-pro',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 12000,
+        'chunk_overlap': 1200
+    }
 }
 
 # Add constants at the top of the file after imports
