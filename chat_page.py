@@ -6,6 +6,7 @@ from core.graph import Graph
 import pandas as pd
 import uuid
 import time
+import html
 
 # from main import main as experimental_agent_main
 from experimental_agent.app import main as experimental_agent_main
@@ -21,6 +22,13 @@ def format_user_bubble(query, timestamp):
     Returns:
         None (displays the message directly using st.markdown)
     """
+    query = query.strip()
+
+    # Escape HTML entities to prevent injection
+    query = html.escape(query)
+
+    # Convert line breaks to <br> for display
+    query = query.replace("\n", "<br>")
     return f"""
         <style>
         .user-bubble {{
@@ -288,8 +296,7 @@ def show_agentic_chat_interface():
         st.markdown(
             """
         <div style='text-align: center;margin-bottom:4%;'>
-        <h2>Lending Risk Analysis and Approval Prediction</h2>
-        <h4 style="color:gray; margin-top:-10px;">Origination Data Analytics Tool</h4></div>
+        <h2>Origination Data Analytics Tool</h2></div>
         """,
             unsafe_allow_html=True,
         )
@@ -302,7 +309,7 @@ def show_agentic_chat_interface():
             <style>
             .stTextInput {
                 width: 100%;
-                max-width: 600px;
+                max-width: 650px;
                 margin: 0 auto;
             }
             .stTextInput input {

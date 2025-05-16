@@ -46,27 +46,34 @@ GOOGLE_API_KEY = os.getenv("LLM_API_KEY")
 
 # Define available Gemini models
 GEMINI_MODELS = {
-    "gemini-1.5-flash": {
-        "model": "gemini-1.5-flash",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 10000,
-        "chunk_overlap": 1000,
+    'gemini-2.0-flash': {
+        'model': 'gemini-2.0-flash',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 12000,
+        'chunk_overlap': 1200
     },
-    "gemini-1.5-pro": {
-        "model": "gemini-1.5-pro",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 15000,
-        "chunk_overlap": 1500,
+    'gemini-1.5-flash': {
+        'model': 'gemini-1.5-flash',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 10000,
+        'chunk_overlap': 1000
     },
-    "gemini-pro": {
-        "model": "gemini-pro",
-        "temperature": 0.3,
-        "max_retries": 3,
-        "chunk_size": 12000,
-        "chunk_overlap": 1200,
+    'gemini-1.5-pro': {
+        'model': 'gemini-1.5-pro',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 15000,
+        'chunk_overlap': 1500
     },
+    'gemini-pro': {
+        'model': 'gemini-pro',
+        'temperature': 0.3,
+        'max_retries': 3,
+        'chunk_size': 12000,
+        'chunk_overlap': 1200
+    }
 }
 
 # Add constants at the top of the file after imports
@@ -1124,9 +1131,17 @@ class Agent:
 
             # Regular processing for other queries
             vector_store = self.load_vector_store()
-            if not vector_store:
-                # Only perform web search if no local content is available
+            docs = None
+            
+            if vector_store:
+                docs = vector_store.similarity_search(user_question)
+            
+            # Perform web search if no vector store or no relevant docs found
+            if not vector_store or not docs:
                 try:
+                    # Inform user that we're searching the web
+                    web_search_msg = "No relevant information found in the uploaded documents. Searching the web for answers..."
+                    
                     web_results = await self.search_web_async(user_question)
                     web_context = "\n".join(
                         [
@@ -1168,14 +1183,12 @@ class Agent:
                     }
                     self.update_memory(user_question, response["output_text"], context)
 
-                    return response["output_text"]
+                    # Prepend the web search message to the response
+                    return web_search_msg + "\n\n" + response["output_text"]
                 except Exception as e:
                     raise Exception(f"Error during web search: {str(e)}")
 
-            docs = vector_store.similarity_search(user_question)
-            if not docs:
-                raise Exception("No relevant content found in the processed files.")
-
+            # If we have relevant docs from vector store, use them
             chain = self.get_conversational_chain()
             if not chain:
                 raise Exception("Failed to create conversational chain")
@@ -1210,28 +1223,8 @@ class Agent:
 
     def _post_process_response(self, response, question):
         """Post-process the response to ensure it's relevant to the question."""
-        # Extract the main question type
-        question_type = self._analyze_query_type(question)
-        
-        # Add a clear section header based on question type
-        if question_type == "visualization":
-            header = "Visualization Analysis:\n"
-        elif question_type == "comparison":
-            header = "Comparative Analysis:\n"
-        elif question_type == "prediction":
-            header = "Predictive Analysis:\n"
-        elif question_type == "analysis":
-            header = "Detailed Analysis:\n"
-        else:
-            header = "Response:\n"
-        
-        # Add a summary of what was analyzed
-        summary = f"Based on your question about {self._get_question_topic(question)}, here's the analysis:\n\n"
-        
-        # Combine all parts
-        final_response = f"{header}{summary}{response}"
-        
-        return final_response
+        # Return the response directly without any prefix
+        return response.strip()
 
     def _get_question_topic(self, question):
         """Extract the main topic from the question."""
