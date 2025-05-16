@@ -35,3 +35,4 @@ htmlcov/
 .coverage
 *.log
 faiss_index/
+origination.ipynb
