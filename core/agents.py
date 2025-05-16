@@ -7,6 +7,7 @@ from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import HumanMessage
 from langchain_core.messages import AIMessage
+from termcolor import colored
 
 
 warnings.filterwarnings("ignore")
@@ -184,6 +185,7 @@ class BI_Agent:
         #     return self.helper_functions["execute_analysis"](
         #         df=self.dataset, response_text=llm_response.content
         #     )
+        print(colored("inside bi agent class", "green"))
         response = self.helper_functions["execute_analysis"].invoke(
             {"df": self.dataset, "response_text": llm_response.content}
         )
@@ -400,7 +402,7 @@ class OutOfDomainAgent:
         response = self.llm.invoke(prompt_template.invoke({"question": question}))
         if "[SEARCH_REQUIRED]" in response.content:
             try:
-                search_result = self.tools[0].run(question)
+                search_result = self.tools._run(question)
             except Exception as e:
                 print(f"Error in search: {e}")
                 search_result = "This question is out of domain. Please ask a question related to mortgage data analysis. I am unable to provide Internet search results at this time."

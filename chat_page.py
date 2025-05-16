@@ -383,11 +383,11 @@ def show_agentic_chat_interface():
                             "table": table,
                         }
                     )
-
+                    # print("formatting response")
                     format_assistant_bubble_typewrite(answer, typewriter=True)
 
                     col1, col2, col3 = st.columns([1, 3, 4])
-
+                    # print(" chart")
                     with col2:
                         if chart_path and chart_key:
                             toggle_key = f"show_chart_{chart_key}"
@@ -411,7 +411,7 @@ def show_agentic_chat_interface():
                                     caption="Generated Chart",
                                     use_container_width=False,
                                 )
-
+                    # print("table")
                     with col3:
                         if (
                             table is not None

@@ -7,7 +7,7 @@ import re
 import uuid
 import yaml
 from dotenv import load_dotenv
-import traceback
+from termcolor import colored
 
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -132,6 +132,7 @@ def execute_analysis(df, response_text):
         dict: A dictionary with keys: 'approach', 'answer', 'figure', 'code', 'chart_code'
     """
     tools = Tools()
+    print(colored("inside bi execute analysis", "cyan"))
     ans_generated = False
     chart_generated = False
     results = {
