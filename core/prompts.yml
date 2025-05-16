@@ -55,6 +55,47 @@ prompts:
     3. You must ONLY use the column names provided in the <data_description> above.
     4. Store the final result in a DataFrame or Series named `output_df`
     5. Ensure the result is suitable for summarization and visualization
+
+    If the user asks to "describe the dataset", "give an overview", "what's in the data", or similar:
+    Start with a one-paragraph overview in business-friendly language.
+
+    Use actual column names from the schema to:
+    - Briefly explain what the dataset contains (e.g., home loan applications).
+    - Identify the industry (e.g., mortgage lending).
+    - Mention a few meaningful variables (e.g., `loan_amount`, `loan_purpose`, `applicant_race`, `action_taken`) and what they represent.
+    
+    Compose this overview dynamically based on the provided schema, not as a static sentence.
+    Then provide a structured business summary with the following sections:
+
+    **Dataset Overview**
+    - Total number of records (rows) and fields (columns).
+    - Time period covered, if a date or year column (e.g., `activity_year`) is available.
+
+    **Loan Purpose**
+    - Top loan purposes (e.g., purchase, refinance) with percentage distribution.
+
+    **Loan Types**
+    - Distribution of loan types (e.g., conventional, FHA, VA).
+
+    **Approval vs. Denial**
+    - Share of loans that were approved, denied, or withdrawn — use simple percentages.
+
+    **Optional: Summary Stats**
+    - If meaningful, include summary stats for key numeric fields like loan amount or applicant income.
+
+    **Formatting Guidelines**
+    - All numeric values should use US-style formatting, with commas as thousand separators.
+      - Example: 132468 → 132,468
+    - Round currency values to nearest thousand or million where applicable.
+    - If the value represents dollar amounts, prepend with $ and abbreviate large values:
+      - Example: 
+      - $253620000 → $253.62M
+      - $189632 → $189.63K (use “K” for values below 1 million)
+      - Always round to two decimal places when converting to K or M
+    - Avoid scientific notation in outputs.
+    - When providing percentages, round to two decimal places and include 
+      - Example: 0.5051 → 50.51%
+    - Avoid showing the full list of column names or raw statistical dumps — keep it executive-friendly.
     </approach>
 
     Next, write fully executable Python code inside <code> tags:
@@ -65,19 +106,26 @@ prompts:
     - You must check or assume the data type when filtering: use integers inside isin(), not strings.
         ✅ df[df["action_taken"].isin([1, 2])]
         ❌ df[df["action_taken"].isin(["1", "2"])]
-    - Include all steps: filtering, processing, calculations. Filter out the NA values before hand.
+    - Include all steps: filtering, processing, calculations. Filter out the NA values before hand. Filter NA values before computing.
     - Assign your final output to a variable named `output_df`.
     - Do NOT use placeholder values like `[value from output_df]` or assume `output_df` is already defined.
+    - Format all numeric values in `output_df` using **Million (M)** and **Billion (B)** notation based on their magnitude for improved readability.
 
     Then, include chart code inside <chart> tags to visualize the result:
     - Use only: pandas, matplotlib, seaborn
-    - Make the chart readable: titles, axis labels, tick rotation if needed
-    - Add data labels
-    - Choose appropriate chart types:
-        - sns.barplot() – for grouped comparisons
-        - sns.lineplot(marker="o") – for trends
-        - sns.histplot() – for distributions
-        - sns.boxplot() – for group spread
+    - The chart must be readable and business-friendly:
+        - Set clear titles, axis labels, and legends (if applicable)
+        - Rotate tick labels if overlapping (if needed)
+        - Add data labels directly on bars or points (when applicable)
+        - Use appropriate color schemes to highlight comparisons or categories
+        - Format all numeric values (axis ticks and labels) using **Million (M)** and **Billion (B)** notation if the numbers are large, for better readability
+    - Choose appropriate chart types based on the analysis:
+        - `sns.barplot()` – for grouped comparisons
+        - `sns.lineplot(marker="o")` – for trends over time or ordered categories
+        - `sns.histplot()` – for distributions
+        - `sns.boxplot()` – for showing spread or outliers
+    - Avoid clutter: limit the number of bars/categories per chart to improve readability
+    - Always ensure chart is clear without needing the data table
 
 
     Finally, summarize the key findings in natural language inside <answer> tags:
