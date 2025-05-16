@@ -28,7 +28,6 @@ env/
 
 # Environment variables
 .env
-.env.*
 
 # Pytest and test artifacts
 htmlcov/

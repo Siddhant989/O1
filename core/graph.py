@@ -17,8 +17,10 @@ from .agents import (
 )
 from langchain.tools import DuckDuckGoSearchRun
 from .utils import Utility, Helper, Tools, execute_analysis
-
-# from .tools import get_schema_inf
+from langchain_tavily import TavilySearch
+from langchain_community.utilities import GoogleSerperAPIWrapper
+from exa_py import Exa
+from .tools import ResilientSearchTool
 import functools
 from typing import TypedDict, Annotated, List
 from langchain_core.messages import (
@@ -26,10 +28,20 @@ from langchain_core.messages import (
     HumanMessage,
     AIMessage,
 )
+import os
 
+os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API")
+SERP_API = os.getenv("SERP_API")
+EXA_API = os.getenv("EXA_API")
 tool = Tools()
 memory = MemorySaver()
-search_tool = DuckDuckGoSearchRun()
+duckduckgo = DuckDuckGoSearchRun()
+tavily = TavilySearch(max_results=2, topic="general")
+serp = GoogleSerperAPIWrapper(serper_api_key=SERP_API)
+exa = Exa(api_key=EXA_API)
+resilient_search = ResilientSearchTool(
+    duckduckgo=duckduckgo, tavily=tavily, serp=serp, exa=exa
+)
 
 
 class AgentState(TypedDict):
@@ -118,6 +130,7 @@ class Graph:
             "",
         )
         history = state["messages"]
+        print(colored("inside bi_agent", "yellow"))
         response = BIAgent.generate_response(question, history=history)
 
         if response.get("figure"):
@@ -142,7 +155,7 @@ class Graph:
     def fair_agent(self, state: AgentState):
         fair_agent = FairLendingAgent(
             llm=Utility.llm(),
-            tools=[search_tool],
+            tools=[duckduckgo],
             data_description=self.data_description,
             dataset=self.data,
             helper_functions={"execute_analysis": execute_analysis},
@@ -252,7 +265,7 @@ class Graph:
         return response, [HumanMessage(content=message)]
 
     def ood_agent(self, state: AgentState):
-        OODAgent = OutOfDomainAgent(llm=Utility.ood_llm(), tools=[search_tool])
+        OODAgent = OutOfDomainAgent(llm=Utility.ood_llm(), tools=resilient_search)
         question = next(
             (
                 m.content
