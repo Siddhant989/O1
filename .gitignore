@@ -8,7 +8,7 @@ __pycache__/
 *.pyo
 
 # macOS Finder metadata
-.DS_Store
+**/.DS_Store
 .devcontainer/
 
 # Virtual environments
@@ -35,3 +35,4 @@ htmlcov/
 *.log
 faiss_index/
 origination.ipynb
+extra.txt

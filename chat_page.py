@@ -7,6 +7,7 @@ import pandas as pd
 import uuid
 import time
 import html
+from termcolor import colored
 
 # from main import main as experimental_agent_main
 from experimental_agent.app import main as experimental_agent_main
@@ -314,7 +315,8 @@ def show_agentic_chat_interface():
             }
             .stTextInput input {
                 font-size: 18px;
-                padding: 20px;
+                padding-top: 20px;
+                padding-bottom:30px;
             }
             </style>
             """,
@@ -323,6 +325,7 @@ def show_agentic_chat_interface():
         first_prompt = st.text_input(
             "Ask your question...", placeholder="Type your question here..."
         )
+
         if first_prompt:
             # Store and force UI shift to st.chat_input
             st.session_state.first_prompt = first_prompt
@@ -352,6 +355,7 @@ def show_agentic_chat_interface():
             for step in stream:
                 node_name = list(step.keys())[0]
                 node_data = step[node_name]
+                print(colored("inside step", "light_red"), node_name)
                 agent_response = node_data.get("agent_response", {})
                 if agent_response and not shown_agent_response:
                     shown_agent_response = True
@@ -359,9 +363,21 @@ def show_agentic_chat_interface():
                     chart_path = agent_response.get("figure")
                     table = agent_response.get("table")
                     # st.write(agent_response)
-                    if agent_response.get("error"):
-                        st.error(f"⚠️ Error: {agent_response.get('answer')}")
-                        break
+                    # if agent_response.get("error"):
+                    #     st.markdown(
+                    #         """
+                    #         <style>
+                    #             .stError {
+                    #                 width: 100%;
+                    #                 max-width: 950px;
+                    #                 margin: 0 auto;
+                    #             }
+                    #         </style>
+                    #     """,
+                    #         unsafe_allow_html=True,
+                    #     )
+                    #     st.error(f"{agent_response.get('answer')}")
+                    #     break
 
                     if table is not None and isinstance(table, dict):
                         table = pd.DataFrame.from_dict(table)
