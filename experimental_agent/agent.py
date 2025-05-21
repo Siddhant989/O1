@@ -126,6 +126,7 @@ FILE_TYPE_HANDLERS = {
     'application/pdf': 'handle_pdf',
     'text/plain': 'handle_text',
     'application/vnd.ms-excel': 'handle_excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'handle_excel',
     'text/csv': 'handle_csv',
     'image/': 'handle_image'
 }
@@ -436,11 +437,14 @@ class Agent:
         if handler:
             return handler(file_content)
         
-        # If no specific handler found, try to handle as text
-        try:
-            return file_content.decode('utf-8')
-        except Exception as e:
-            return self.handle_error(e)
+        # If no specific handler found and it's not a binary file type, try to handle as text
+        if not any(file_type.startswith(prefix) for prefix in ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/', 'application/pdf']):
+            try:
+                return file_content.decode('utf-8')
+            except Exception as e:
+                return self.handle_error(e)
+        else:
+            return self.handle_error(Exception(f"Unsupported file type: {file_type}"))
 
     def get_text_from_file(self, file):
         """Get text content from a file."""
@@ -1691,8 +1695,45 @@ class Agent:
 
     def handle_excel(self, file_content):
         """Handle Excel file content."""
-        df = pd.read_excel(io.BytesIO(file_content))
-        return self._process_dataframe(df)
+        try:
+            # Read Excel file into DataFrame
+            df = pd.read_excel(io.BytesIO(file_content))
+            
+            # Generate detailed information about the Excel file
+            info = []
+            info.append(f"Excel File Analysis:")
+            info.append(f"Number of rows: {len(df)}")
+            info.append(f"Number of columns: {len(df.columns)}")
+            info.append("\nColumn Information:")
+            
+            # Add detailed column information
+            for col in df.columns:
+                col_info = []
+                col_info.append(f"\n{col}:")
+                col_info.append(f"  Type: {df[col].dtype}")
+                col_info.append(f"  Non-null values: {df[col].count()}")
+                col_info.append(f"  Unique values: {df[col].nunique()}")
+                
+                # Add sample values for non-numeric columns
+                if df[col].dtype == 'object':
+                    sample_values = df[col].dropna().head(3).tolist()
+                    col_info.append(f"  Sample values: {', '.join(map(str, sample_values))}")
+                
+                # Add basic statistics for numeric columns
+                if pd.api.types.is_numeric_dtype(df[col]):
+                    stats = df[col].describe()
+                    col_info.append(f"  Mean: {stats['mean']:.2f}")
+                    col_info.append(f"  Min: {stats['min']:.2f}")
+                    col_info.append(f"  Max: {stats['max']:.2f}")
+                
+                info.append('\n'.join(col_info))
+            
+            # Store the DataFrame for later use
+            self.current_dataframe = df
+            
+            return '\n'.join(info)
+        except Exception as e:
+            raise Exception(f"Error processing Excel file: {str(e)}")
 
     def handle_csv(self, file_content):
         """Handle CSV file content."""

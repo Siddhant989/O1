@@ -159,16 +159,21 @@ def generate_dynamic_prompt(question, file_type=None, content_type=None):
     
     base_prompt += """
     
-    Important:
-    1. Answer the specific question asked in 200-300 words
-    2. Provide thorough explanations while staying focused on the question
-    3. Include relevant context and supporting details
-    4. If the question is unclear, ask for clarification
-    5. Ensure your response is comprehensive yet concise
-    6. Use clear organization and structure in your response
+    Important Instructions:
+    1. Base your answer primarily on the provided content.
+    2. If the content is irrelevant, ambiguous, or incomplete for answering the question, use your general knowledge to supplement.
+    3. Clearly indicate which insights are derived from the content and which are inferred or supplemented externally.
+    4. If necessary, briefly explain why the original content is not fully sufficient.
+    5. When doing so, clearly indicate which parts are based on the content and which are inferred from general understanding.
+    6. Answer the question in 200–300 words.
+    7. Be focused, well-structured, and informative.
+    8. If the question is unclear, ask for clarification.
     
     Content to analyze:
     {content}
+
+    If the question is unrelated or unclear based on this content, supplement your answer with your general knowledge.
+    Make sure to indicate which parts are inferred and which are based on the content provided.
     """
     
     return base_prompt
@@ -193,12 +198,14 @@ Previous Context:
 {memory_context}
 
 Guidelines:
-1. Provide answers in 200-300 words
-2. Be thorough while staying focused on the question
-3. Include relevant context and supporting details
-4. If unsure, ask for clarification
-5. Use clear organization with bullet points when appropriate
-6. Include specific examples and evidence when relevant
+1. Base your response on the provided materials whenever they offer sufficient detail.
+2. If the context does not address the question or is vague, first state that, then proceed using your general knowledge to provide a meaningful answer.
+3. Clearly separate insights drawn from the document/context from those added through broader understanding.
+4. If content is entirely unrelated, state so and provide a general informative answer instead.
+5. Keep responses between 200–300 words.
+6. Be structured, concise, and include supporting details or examples.
+7. Use bullet points when listing ideas or breaking down complex information.
+8. If the question is unclear or unrelated to the content, politely ask for clarification or proceed with a general interpretation.
 
 Context: {context}
 Web Search Results: {web_search}
