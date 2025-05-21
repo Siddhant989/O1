@@ -172,7 +172,7 @@ class BI_Agent:
             )
         )
 
-    def generate_response(self, question, history=""):
+    def generate_response(self, question, history="", formatting=False):
         """
         Generate a final response from the agent.
 
@@ -188,8 +188,12 @@ class BI_Agent:
         response = self.helper_functions["execute_analysis"].invoke(
             {"df": self.dataset, "response_text": llm_response.content}
         )
-        print(colored("formatting", "light_green"))
-        if not response.get("error") and response.get("answer", "").strip():
+        if (
+            not response.get("error")
+            and response.get("answer", "").strip()
+            and formatting == True
+        ):
+            print(colored("formatting", "light_green"))
             formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
 
             formatted_answer = Formatting.format_response(

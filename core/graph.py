@@ -117,8 +117,9 @@ class Graph:
         }
 
     def bi_agent(self, state: AgentState):
+        llm = Utility.llm()
         BIAgent = BI_Agent(
-            llm=Utility.llm(),
+            llm=llm,
             # prompt=bi_agent_prompt,
             tools=[],
             data_description=self.data_description,
@@ -137,8 +138,8 @@ class Graph:
         history = state["messages"]
         max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
-        print(colored("inside bi_agent", "yellow"))
-        response = BIAgent.generate_response(question, history=history)
+        print(colored(f"inside bi_agent,{retry_no, max_retries}", "yellow"))
+        response = BIAgent.generate_response(question, history=history, formatting=True)
 
         while retry_no < max_retries:
             # Check if both are generated
@@ -156,26 +157,33 @@ class Graph:
             retry_no += 1
             response = BIAgent.generate_response(question, history=history)
 
-            # Update only the missing parts
-            # if not answer_generated and retry_response.get("answer_generated", False):
-            #     response["answer"] = retry_response["answer"]
-            #     response["answer_generated"] = True
-            #     answer_generated = True
+        if retry_no == max_retries:
+            print(colored("⚠️ All retries failed. Attempting recovery...", "light_blue"))
 
-            # if not chart_generated and retry_response.get("chart_generated", False):
-            #     print("ENTERED CHART GENERATED : ")
-            #     response["figure"] = retry_response.get("figure")
-            #     response["chart"] = retry_response.get("chart")
-            #     response["chart_generated"] = True
-            #     chart_generated = True
+            # Step 1: Ask LLM to reword the original query
+            reword_prompt = f"""
+                The following user query repeatedly failed to generate a valid response: "{question}"
+                can you use some context to reqord the user query with same meaning and context to be asked to LLM
+                Do not add any other word, just return the query as it will be passed to other LLM.
+                """
+            reworded_question = llm.invoke(reword_prompt).content.strip()
 
-        if response.get("figure"):
-            print("got some figure here", response["figure"])
+            print(colored("🔄 Reworded query:", "yellow"), reworded_question)
 
-        if response.get("error"):
-            return response, [
-                AIMessage(content="[ERROR] BI Agent failed with: " + response["answer"])
-            ]
+            # Step 2: Retry with reworded question
+            response = BIAgent.generate_response(reworded_question, history=history)
+
+            if response.get("error") or not response.get("answer", "").strip():
+                # Step 3: Ask LLM to diagnose and refine the original query based on failure
+                diagnose_prompt = f"""
+                The following user query repeatedly failed to generate a valid response: "{question}"
+                can you use some context to reqord the user query with same meaning and context to be asked to LLM
+                Do not add any other word, just return the query as it will be passed to other LLM.
+                """
+                revised_question = llm.invoke(diagnose_prompt).content.strip()
+
+                print("🛠 Revised query based on error analysis:", revised_question)
+                response = BIAgent.generate_response(revised_question, history=history)
 
             # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
