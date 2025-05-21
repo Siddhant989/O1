@@ -17,7 +17,7 @@ class Data:
         self.data = self.sanitize_data(excel_data)
         self.data_sample = self.data.sample(10, random_state=42)
         # print(self.data.dtypes)
-        # print(self.data["county_code"].unique())
+        print(self.data["applicant_age"].unique())
         # self.data = pd.read_parquet("./data/origination.parquet")
         print("data loaded in data loader")
 

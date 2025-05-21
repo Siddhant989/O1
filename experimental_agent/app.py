@@ -1,3 +1,6 @@
+import os
+
+os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNINGS"] = "true"
 import streamlit as st
 from .agent import Agent
 import asyncio
@@ -619,16 +622,16 @@ def main():
         if process_button:
             # Reset all chat-related session state
             st.session_state.chat_history = []
-            if 'messages' in st.session_state:
+            if "messages" in st.session_state:
                 del st.session_state.messages
-            if 'preview_states' in st.session_state:
+            if "preview_states" in st.session_state:
                 del st.session_state.preview_states
-            if 'first_prompt' in st.session_state:
+            if "first_prompt" in st.session_state:
                 st.session_state.first_prompt = None
-            
+
             # Clear any existing chat interface elements
             st.empty()
-            
+
             with st.spinner("Processing..."):
                 all_text = ""
 
@@ -888,7 +891,6 @@ def main():
                                         and "transcribe" not in operations
                                     ):
                                         st.audio(processed_audio.export().read())
-                                    
 
                                     # Clean up temporary file
                                     os.unlink(temp_wav.name)
@@ -927,7 +929,6 @@ def main():
                 # Display response with styled bubble
                 assistant_html = format_assistant_bubble(response, timestamp)
                 st.markdown(assistant_html, unsafe_allow_html=True)
-                
 
                 st.rerun()
             except Exception as e:

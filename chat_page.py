@@ -11,7 +11,7 @@ from termcolor import colored
 from core.utils import Tools
 
 # from main import main as experimental_agent_main
-from experimental_agent.app import main as experimental_agent_main
+# from experimental_agent.app import main as experimental_agent_main
 
 
 def format_user_bubble(query, timestamp):
@@ -183,9 +183,9 @@ def show_agentic_chat_interface():
             st.rerun()
 
     # If experimental agent is toggled, show the experimental agent interface
-    if st.session_state.show_experimental:
-        experimental_agent_main()
-        return
+    # if st.session_state.show_experimental:
+    #     experimental_agent_main()
+    #     return
 
     # st.markdown("---")
     if st.session_state.get("reset_successful"):
@@ -366,22 +366,7 @@ def show_agentic_chat_interface():
                     )
                     chart_path = agent_response.get("figure")
                     table = agent_response.get("table")
-                    # st.write(agent_response)
-                    # if agent_response.get("error"):
-                    #     st.markdown(
-                    #         """
-                    #         <style>
-                    #             .stError {
-                    #                 width: 100%;
-                    #                 max-width: 950px;
-                    #                 margin: 0 auto;
-                    #             }
-                    #         </style>
-                    #     """,
-                    #         unsafe_allow_html=True,
-                    #     )
-                    #     st.error(f"{agent_response.get('answer')}")
-                    #     break
+                    st.write(agent_response)
 
                     if table is not None and isinstance(table, dict):
                         table = pd.DataFrame.from_dict(table)
@@ -407,10 +392,11 @@ def show_agentic_chat_interface():
                     format_assistant_bubble_typewrite(answer, typewriter=True)
 
                     col1, col2, col3 = st.columns([1, 3, 4])
+                    fallback_key = chart_key or str(uuid.uuid4())
                     # print(" chart")
                     with col2:
                         if chart_path and chart_key:
-                            toggle_key = f"show_chart_{chart_key}"
+                            toggle_key = f"show_chart_{fallback_key}"
                             if toggle_key not in st.session_state:
                                 st.session_state[toggle_key] = False
                             if st.toggle(
@@ -438,7 +424,7 @@ def show_agentic_chat_interface():
                             and isinstance(table, pd.DataFrame)
                             and not table.empty
                         ):
-                            table_toggle_key = f"show_table_{chart_key}"
+                            table_toggle_key = f"show_table_{fallback_key}"
                             if table_toggle_key not in st.session_state:
                                 st.session_state[table_toggle_key] = False
                             if st.toggle(
