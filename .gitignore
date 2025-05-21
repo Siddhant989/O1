@@ -1,5 +1,6 @@
 
-plots/
+plots/*
+!plots/.gitkeep
 data/morigination.xlsx
 data/origination_feats.csv
 .devcontainer/
