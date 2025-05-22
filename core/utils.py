@@ -142,7 +142,7 @@ class Formatting:
 
             # # Safely evaluate to a dictionary
             # ans = ast.literal_eval(cleaned)
-            respons = Formatting.insert_newlines_for_markdown(respons)
+            # respons = Formatting.insert_newlines_for_markdown(respons)
             return respons
         except Exception as e:
             print(colored(f"Exception in formatting: {str(e)}", "light_yellow"))
