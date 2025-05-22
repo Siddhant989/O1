@@ -18,6 +18,7 @@ openpyxl
 streamlit-navigation-bar
 duckduckgo-search
 beautifulsoup4
+markdown
 aiofiles
 aiohttp
 faiss-cpu
