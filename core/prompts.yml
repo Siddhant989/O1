@@ -99,27 +99,8 @@ prompts:
       2. Listing every column or giving technical column names without explanation
       3. Raw statistics like mean/std or .describe() outputs
       4. Speculative statements like "may suggest", "could indicate", etc.
-    If the user asks to “describe the dataset” or “give an overview”, respond in a clear, business-friendly way:
+      5. <chart> and <code> block for this question
 
-    Start with a short paragraph explaining what kind of data this is and what it captures. Start with this sentence "This dataset is derived from Home Mortgage Disclosure Act (HMDA) filings, providing comprehensive insights into residential mortgage applications and lending decisions...". 
-    Mention key themes like loans, applicants, approval status etc.
-    Highlight a few important columns in simple terms (e.g., “loan amount”, “purpose of the loan”, “approval status”, “applicant income”, “applicant ethnicity“, “applicant race").
-
-    Then summarize:
-     1. Total number of records and columns.
-     2. Time period covered in the data (from the activity_year column).
-     3. Most common loan purposes (just top few with %).
-     4. Loan types (basic breakdown).
-     5. Count of approved vs. denied loans.
-
-    Avoid:
-
-      1. A preview sample (first 10 rows using df.head(10)) to give a feel of the data.
-      2. Listing every column or giving technical column names without explanation
-      3. Raw statistics like mean/std or .describe() outputs
-      4. Speculative statements like "may suggest", "could indicate", etc.
-
-    The tone should be helpful, clear, and easy to understand for business users who may not have technical backgrounds.
     The tone should be helpful, clear, and easy to understand for business users who may not have technical backgrounds.
     </approach>
 
@@ -127,12 +108,18 @@ prompts:
     <code>
     Write fully executable Python code that:
     - Uses `df` as the dataset
+    - Skip this step if {question} is about data description, data isnights.
     - You must ONLY use the column names provided in the <data_description> above.
     - DO NOT use any column that is not explicitly listed — even if it seems familiar or common.
     - Filters and processes the data cleanly
     - Assigns final output to `output_df`
     - Do NOT use placeholder values like `[value from output_df]` or assume `output_df` is already defined.
     - Format all numeric values in `output_df` using **Million (M)** and **Billion (B)** notation based on their magnitude for improved readability.
+    - change column names in human reading format, remove underscore and capital the first letter of each word
+      - Example: 
+        - "action_taken" -> "Action Taken"
+        - "applicant_age" -> "Applicant Age"
+
     </code>
 
     Then, include chart code inside <chart> tags to visualize the result:
@@ -150,6 +137,7 @@ prompts:
         - `sns.boxplot()` – for showing spread or outliers
     - Avoid clutter: limit the number of bars/categories per chart to improve readability
     - Always ensure chart is clear without needing the data table
+    - Skip this step if question is about data description, data isnights.
 
     Finally, summarize the key findings in natural language inside <answer> tags:
     <answer>
@@ -454,6 +442,10 @@ prompts:
   Formatting_Prompt: |
     You are a formatting-aware assistant that corrects LLM answers based on a table.
 
+    ### 🚫 ABSOLUTE RULE:
+    Do not break markdown formatting. Markdown like `**bold**` must remain on one line. 
+    NEVER insert line breaks inside `**...**`. This is critical for display.
+
     ### Original Answer:
     {original_answer}
 
@@ -461,21 +453,42 @@ prompts:
     {table_data}
 
     ### Instructions:
-    1. If the original answer is vague or says things like "see the chart", "in the table", "The output_df shows" or references a table like "`output_df`" rewrite it clearly using the table.
+    1. If the original answer is vague or says things like "see the chart", "in the table", "The output_df shows" or references a table like "`output_df`" rewrite it clearly using the table. 
+      If the original answer contains generic chart text like:
+        - “The chart shows...”
+        - “The x-axis represents...”
+        - “The top 10 counties...”
+        **Remove it** and instead describe the actual insight from the table values.
+      If the table is bigger then 10 rows just give details about the table.
+
     2. Fix formatting issues:
       - All numeric values should use US-style formatting, with commas as thousand separators.
         - Example: 132468 → 132,468
       - Round currency values to nearest thousand or million where applicable.
-      - If the value represents dollar amounts, prepend with $ and abbreviate large values:
-        - Example: 
-          - $253620000 → $253.62M
-          - $189632 → $189.63K (use “K” for values below 1 million)
-          - Always round to two decimal places when converting to K or M
+      - If the value represents a dollar amount:
+        - Abbreviate large values for readability:
+          - $253,620,000 → `$253.62M`
+          - $189,632 → `$189.63K` (use "K" for values below 1 million)
+        - Always round to **two decimal places**
+        - Use **commas** as thousand separators (e.g., 132468 → 132,468)
       - Avoid scientific notation in outputs.
       - When providing percentages, round to two decimal places and include 
         - Example: 0.5051 → 50.51%
-    3. Dont change the nested bullet points.
-    4. Do not remove or change Markdown formatting like `**bold**`, `*italic*`, or symbols.
+
+    3. **CRITICAL FORMATTING RULE**: Do not remove or change Markdown formatting like `**bold**`, `*italic*`, or symbols.
+      - **Keep all markdown formatting on single lines without line breaks**
+      - Ensure bold markers (**...**) do not contain newline characters. **NEVER insert line breaks within markdown markers** 
+        - For example, use **Debt-to-income ratio**, not **Debt-to-income ratio\n**
+      - Do NOT insert newlines inside bold markers (`**...**`).
+        For example, write **Denial reason 3**, not **Denial reason\n3** or **3\n**
       - Just ensure they will render correctly in `st.markdown()`
 
+    **INCORRECT formatting example (DO NOT DO THIS):**
+      * **Credit history
+      ** is another significant factor
+
+    **CORRECT formatting example:**
+      * **Credit history** is another significant factor
+
+    If the table is not available, do not add anything just return the response as it is.
     Return only the improved answer as a clean, display-ready Markdown string.
