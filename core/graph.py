@@ -140,50 +140,43 @@ class Graph:
         retry_no = 0
         print(colored(f"inside bi_agent,{retry_no, max_retries}", "yellow"))
         response = BIAgent.generate_response(question, history=history, formatting=True)
-
         while retry_no < max_retries:
             # Check if both are generated
-            success = response.get("error")
             answer = response.get("answer", "").strip()
+            print(f"answer:{answer}")
+            res_error = response.get("error")
+            if len(answer) == 0:
+                res_error = True
             print(
                 colored(
-                    f"Retry Count : {retry_no} and success {success} and answer {answer!=''}",
+                    f"Retry Count : {retry_no} and success {res_error} and answer {answer!=''}",
                     "red",
                 )
             )
 
-            if not success:
+            if not res_error:
                 break
             retry_no += 1
             response = BIAgent.generate_response(question, history=history)
+            print(f"{retry_no}, Error: {response.get('error')}")
 
-        if retry_no == max_retries:
+        answer = response.get("answer", "").strip()
+        res_error = response.get("error")
+        if len(answer) == 0:
+            res_error = True
+        if retry_no == max_retries and res_error:
             print(colored("⚠️ All retries failed. Attempting recovery...", "light_blue"))
 
             # Step 1: Ask LLM to reword the original query
             reword_prompt = f"""
                 The following user query repeatedly failed to generate a valid response: "{question}"
-                can you use some context to reqord the user query with same meaning and context to be asked to LLM
+                can you use some context to reword the user query with same meaning and context to be asked to LLM
                 Do not add any other word, just return the query as it will be passed to other LLM.
                 """
             reworded_question = llm.invoke(reword_prompt).content.strip()
 
             print(colored("🔄 Reworded query:", "yellow"), reworded_question)
-
-            # Step 2: Retry with reworded question
             response = BIAgent.generate_response(reworded_question, history=history)
-
-            if response.get("error") or not response.get("answer", "").strip():
-                # Step 3: Ask LLM to diagnose and refine the original query based on failure
-                diagnose_prompt = f"""
-                The following user query repeatedly failed to generate a valid response: "{question}"
-                can you use some context to reqord the user query with same meaning and context to be asked to LLM
-                Do not add any other word, just return the query as it will be passed to other LLM.
-                """
-                revised_question = llm.invoke(diagnose_prompt).content.strip()
-
-                print("🛠 Revised query based on error analysis:", revised_question)
-                response = BIAgent.generate_response(revised_question, history=history)
 
             # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
@@ -197,8 +190,9 @@ class Graph:
         return response, [HumanMessage(content=message)]
 
     def fair_agent(self, state: AgentState):
+        llm = Utility.llm()
         fair_agent = FairLendingAgent(
-            llm=Utility.llm(),
+            llm=llm,
             tools=resilient_search,
             data_description=self.data_description,
             dataset=self.data,
@@ -218,23 +212,35 @@ class Graph:
         response = fair_agent.generate_response(question, history=history)
         while retry_no < max_retries:
             # Check if both are generated
-            success = response.get("error")
+            answer = response.get("answer", "").strip()
+            res_error = response.get("error")
+            if len(answer) == 0:
+                res_error = True
             print(colored(f"Retry Count : {retry_no}", "red"))
 
-            if not success:
+            if not res_error:
                 break
             retry_no += 1
             response = fair_agent.generate_response(question, history=history)
+        answer = response.get("answer", "").strip()
+        res_error = response.get("error")
+        if len(answer) == 0:
+            res_error = True
+        if retry_no == max_retries and res_error:
+            print(colored("⚠️ All retries failed. Attempting recovery...", "light_blue"))
 
-        if response.get("figure"):
-            Helper.display_saved_plot(response["figure"])
+            # Step 1: Ask LLM to reword the original query
+            reword_prompt = f"""
+                The following user query repeatedly failed to generate a valid response: "{question}"
+                can you use some context to reword the user query with same meaning and context to be asked to LLM
+                Do not add any other word, just return the query as it will be passed to other LLM.
+                """
+            reworded_question = llm.invoke(reword_prompt).content.strip()
 
-        if response.get("error"):
-            return response, [
-                AIMessage(content="[ERROR] BI Agent failed with: " + response["answer"])
-            ]
+            print(colored("🔄 Reworded query:", "yellow"), reworded_question)
+            response = fair_agent.generate_response(reworded_question, history=history)
 
-            # Helper.display_saved_plot(response["figure"])
+        # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
             response["table"] = response["table"].to_dict()
 
@@ -245,8 +251,9 @@ class Graph:
         return response, [HumanMessage(content=message)]
 
     def risk_agent(self, state: AgentState):
+        llm = Utility.llm()
         risk_agent = RiskEvaluationAgent(
-            llm=Utility.llm(),
+            llm=llm,
             data_description=self.data_description,
             dataset=self.data,
             helper_functions={"execute_analysis": execute_analysis},
@@ -260,32 +267,48 @@ class Graph:
             "",
         )
         history = state["messages"]
-        max_retries = 3
+        max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
         response = risk_agent.generate_response(question, history=history)
 
         while retry_no < max_retries:
             # Check if both are generated
-            success = response.get("error")
+            answer = response.get("answer", "").strip()
+            res_error = response.get("error")
+            if len(answer) == 0:
+                res_error = True
             print(colored(f"Retry Count : {retry_no}", "red"))
 
-            if not success:
+            if not res_error:
                 break
-            print("ERROR", response.get("answer"))
-            # Retry only for missing parts
-            # retry_needed = not (success)
-            # if not retry_needed:
-            #     break
 
             retry_no += 1
             response = risk_agent.generate_response(question, history=history)
 
-        if response.get("error"):
-            return response, [
-                AIMessage(content="[ERROR] BI Agent failed with: " + response["answer"])
-            ]
+        answer = response.get("answer", "").strip()
+        res_error = response.get("error")
+        if len(answer) == 0:
+            res_error = True
+        if retry_no == max_retries and res_error:
+            print(colored("⚠️ All retries failed. Attempting recovery...", "light_blue"))
 
-            # Helper.display_saved_plot(response["figure"])
+            # Step 1: Ask LLM to reword the original query
+            reword_prompt = f"""
+                The following user query repeatedly failed to generate a valid response: "{question}"
+                can you use some context to reword the user query with same meaning and context to be asked to LLM
+                Do not add any other word, just return the query as it will be passed to other LLM.
+                """
+            reworded_question = llm.invoke(reword_prompt).content.strip()
+
+            print(colored("🔄 Reworded query:", "yellow"), reworded_question)
+            response = risk_agent.generate_response(reworded_question, history=history)
+
+        # if response.get("error"):
+        #     return response, [
+        #         AIMessage(content="[ERROR] BI Agent failed with: " + response["answer"])
+        #     ]
+
+        # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
             response["table"] = response["table"].to_dict()
 
@@ -299,8 +322,9 @@ class Graph:
         return response, [HumanMessage(content=message)]
 
     def general_agent(self, state: AgentState):
+        llm = Utility.llm()
         gen_agent = ScenarioSimulationAgent(
-            llm=Utility.llm(),
+            llm=llm,
             data_description=self.data_description,
             dataset=self.data,
             helper_functions={"execute_analysis": execute_analysis},
@@ -314,27 +338,41 @@ class Graph:
             "",
         )
         history = state["messages"]
-        max_retries = 3
+        max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
         response = gen_agent.generate_response(question, history=history)
         while retry_no < max_retries:
             # Check if both are generated
-            success = response.get("error")
+            answer = response.get("answer", "").strip()
+            res_error = response.get("error")
+            if len(answer) == 0:
+                res_error = True
             print(colored(f"Retry Count : {retry_no}", "red"))
 
-            if not success:
+            if not res_error:
                 break
             print("ERROR", response.get("answer"))
-            # Retry only for missing parts
-            # retry_needed = not (success)
-            # if not retry_needed:
-            #     break
 
             retry_no += 1
             response = gen_agent.generate_response(question, history=history)
 
-        if response.get("figure"):
-            Helper.display_saved_plot(response["figure"])
+        answer = response.get("answer", "").strip()
+        res_error = response.get("error")
+        if len(answer) == 0:
+            res_error = True
+        if retry_no == max_retries and res_error:
+            print(colored("⚠️ All retries failed. Attempting recovery...", "light_blue"))
+
+            # Step 1: Ask LLM to reword the original query
+            reword_prompt = f"""
+                The following user query repeatedly failed to generate a valid response: "{question}"
+                can you use some context to reword the user query with same meaning and context to be asked to LLM
+                Do not add any other word, just return the query as it will be passed to other LLM.
+                """
+            reworded_question = llm.invoke(reword_prompt).content.strip()
+
+            print(colored("🔄 Reworded query:", "yellow"), reworded_question)
+            response = gen_agent.generate_response(reworded_question, history=history)
 
         if response.get("error"):
             return response, [
