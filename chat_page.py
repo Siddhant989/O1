@@ -232,7 +232,7 @@ def show_agentic_chat_interface():
             else "Origination Tool"
         )
         if st.button(toggle_label, key="toggle_button"):
-            st.session_state.show_experimental = not st.session_state.show_experimental
+            st.session_state.show_experimental = st.session_state.show_experimental
             st.rerun()
 
     # If experimental agent is toggled, show the experimental agent interface
