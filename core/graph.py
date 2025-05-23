@@ -176,7 +176,9 @@ class Graph:
             reworded_question = llm.invoke(reword_prompt).content.strip()
 
             print(colored("🔄 Reworded query:", "yellow"), reworded_question)
-            response = BIAgent.generate_response(reworded_question, history=history)
+            response = BIAgent.generate_response(
+                reworded_question, history=history, formatting=True
+            )
 
             # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
@@ -209,7 +211,9 @@ class Graph:
         history = state["messages"]
         max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
-        response = fair_agent.generate_response(question, history=history)
+        response = fair_agent.generate_response(
+            question, history=history, formatting=True
+        )
         while retry_no < max_retries:
             # Check if both are generated
             answer = response.get("answer", "").strip()
@@ -221,7 +225,9 @@ class Graph:
             if not res_error:
                 break
             retry_no += 1
-            response = fair_agent.generate_response(question, history=history)
+            response = fair_agent.generate_response(
+                question, history=history, formatting=True
+            )
         answer = response.get("answer", "").strip()
         res_error = response.get("error")
         if len(answer) == 0:
@@ -238,7 +244,9 @@ class Graph:
             reworded_question = llm.invoke(reword_prompt).content.strip()
 
             print(colored("🔄 Reworded query:", "yellow"), reworded_question)
-            response = fair_agent.generate_response(reworded_question, history=history)
+            response = fair_agent.generate_response(
+                reworded_question, history=history, formatting=True
+            )
 
         # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
@@ -269,7 +277,9 @@ class Graph:
         history = state["messages"]
         max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
-        response = risk_agent.generate_response(question, history=history)
+        response = risk_agent.generate_response(
+            question, history=history, formatting=True
+        )
 
         while retry_no < max_retries:
             # Check if both are generated
@@ -283,7 +293,9 @@ class Graph:
                 break
 
             retry_no += 1
-            response = risk_agent.generate_response(question, history=history)
+            response = risk_agent.generate_response(
+                question, history=history, formatting=True
+            )
 
         answer = response.get("answer", "").strip()
         res_error = response.get("error")
@@ -301,7 +313,9 @@ class Graph:
             reworded_question = llm.invoke(reword_prompt).content.strip()
 
             print(colored("🔄 Reworded query:", "yellow"), reworded_question)
-            response = risk_agent.generate_response(reworded_question, history=history)
+            response = risk_agent.generate_response(
+                reworded_question, history=history, formatting=True
+            )
 
         # if response.get("error"):
         #     return response, [
@@ -340,7 +354,9 @@ class Graph:
         history = state["messages"]
         max_retries = max_retry["llm"]["max_retry"]
         retry_no = 0
-        response = gen_agent.generate_response(question, history=history)
+        response = gen_agent.generate_response(
+            question, history=history, formatting=True
+        )
         while retry_no < max_retries:
             # Check if both are generated
             answer = response.get("answer", "").strip()
@@ -354,7 +370,9 @@ class Graph:
             print("ERROR", response.get("answer"))
 
             retry_no += 1
-            response = gen_agent.generate_response(question, history=history)
+            response = gen_agent.generate_response(
+                question, history=history, formatting=True
+            )
 
         answer = response.get("answer", "").strip()
         res_error = response.get("error")
@@ -372,7 +390,9 @@ class Graph:
             reworded_question = llm.invoke(reword_prompt).content.strip()
 
             print(colored("🔄 Reworded query:", "yellow"), reworded_question)
-            response = gen_agent.generate_response(reworded_question, history=history)
+            response = gen_agent.generate_response(
+                reworded_question, history=history, formatting=True
+            )
 
         if response.get("error"):
             return response, [
