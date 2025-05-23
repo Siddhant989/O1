@@ -172,7 +172,7 @@ class BI_Agent:
             )
         )
 
-    def generate_response(self, question, history="", formatting=False):
+    def generate_response(self, question, history="", formatting=True):
         """
         Generate a final response from the agent.
 
@@ -228,14 +228,14 @@ class BI_Agent:
 
 class FairLendingAgent:
     def __init__(self, llm, tools, dataset, data_description, helper_functions=None):
-        prompt_s = Utility.load_prompts()
+        self.prompt_s = Utility.load_prompts()
         self.llm = llm
         self.agent_name = "Fair Lending Compliance Agent"
         self.dataset = dataset
         self.tools = tools or []
         self.data_description = data_description
         self.helper_functions = helper_functions or {}
-        self.prompt = prompt_s["prompts"]["Fair_Lending_Compliance_Agent"]
+        self.prompt = self.prompt_s["prompts"]["Fair_Lending_Compliance_Agent"]
 
     def add_helper_function(self, name, func):
         self.helper_functions[name] = func
@@ -261,7 +261,7 @@ class FairLendingAgent:
             )
         )
 
-    def generate_response(self, question, history="", formatting=False):
+    def generate_response(self, question, history="", formatting=True):
         result = self.run(question, history)
         content = result.content
 
@@ -316,11 +316,11 @@ class FairLendingAgent:
 
 class RiskEvaluationAgent:
     def __init__(self, llm, dataset, data_description, helper_functions=None):
-        prompt_s = Utility.load_prompts()
+        self.prompt_s = Utility.load_prompts()
         self.llm = llm
         self.agent_name = "Risk and Cost Evaluation Agent"
         self.dataset = dataset
-        self.prompt = prompt_s["prompts"]["Risk_Evaluation_Agent"]
+        self.prompt = self.prompt_s["prompts"]["Risk_Evaluation_Agent"]
         self.helper_functions = helper_functions or {}
         self.data_description = data_description
 
@@ -348,7 +348,7 @@ class RiskEvaluationAgent:
             )
         )
 
-    def generate_response(self, question, history="", formatting=False):
+    def generate_response(self, question, history="", formatting=True):
         result = self.run(question, history)
         response = self.helper_functions["execute_analysis"].invoke(
             {"df": self.dataset, "response_text": result.content}
@@ -389,11 +389,11 @@ class RiskEvaluationAgent:
 
 class ScenarioSimulationAgent:
     def __init__(self, llm, dataset, data_description, helper_functions=None):
-        prompt_s = Utility.load_prompts()
+        self.prompt_s = Utility.load_prompts()
         self.llm = llm
         self.agent_name = "Scenario Simulation Agent"
         self.dataset = dataset
-        self.prompt = prompt_s["prompts"]["General_Scenario_Agent"]
+        self.prompt = self.prompt_s["prompts"]["General_Scenario_Agent"]
         self.data_description = data_description
         self.helper_functions = helper_functions or {}
 
@@ -421,7 +421,7 @@ class ScenarioSimulationAgent:
             )
         )
 
-    def generate_response(self, question, history="", formatting=False):
+    def generate_response(self, question, history="", formatting=True):
         result = self.run(question, history)
         response = self.helper_functions["execute_analysis"].invoke(
             {"df": self.dataset, "response_text": result.content}
