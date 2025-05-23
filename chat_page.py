@@ -8,6 +8,7 @@ import uuid
 import time
 import html
 from termcolor import colored
+from core.utils import Tools
 
 # from main import main as experimental_agent_main
 from experimental_agent.app import main as experimental_agent_main
@@ -359,7 +360,10 @@ def show_agentic_chat_interface():
                 agent_response = node_data.get("agent_response", {})
                 if agent_response and not shown_agent_response:
                     shown_agent_response = True
-                    answer = agent_response.get("answer", "")
+                    answer = agent_response.get(
+                        "answer",
+                        "Unable to generate answer, please ask the question again",
+                    )
                     chart_path = agent_response.get("figure")
                     table = agent_response.get("table")
                     # st.write(agent_response)

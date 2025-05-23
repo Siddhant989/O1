@@ -143,16 +143,16 @@ class Graph:
         while retry_no < max_retries:
             # Check if both are generated
             success = response.get("error")
-            print(colored(f"Retry Count : {retry_no}", "red"))
+            answer = response.get("answer", "").strip()
+            print(
+                colored(
+                    f"Retry Count : {retry_no} and success {success} and answer {answer!=''}",
+                    "red",
+                )
+            )
 
             if not success:
                 break
-            print("ERROR", response.get("answer"))
-            # Retry only for missing parts
-            # retry_needed = not (success)
-            # if not retry_needed:
-            #     break
-
             retry_no += 1
             response = BIAgent.generate_response(question, history=history)
 
@@ -215,12 +215,6 @@ class Graph:
 
             if not success:
                 break
-            print("ERROR", response.get("answer"))
-            # Retry only for missing parts
-            # retry_needed = not (success)
-            # if not retry_needed:
-            #     break
-
             retry_no += 1
             response = fair_agent.generate_response(question, history=history)
 

@@ -99,7 +99,27 @@ prompts:
       2. Listing every column or giving technical column names without explanation
       3. Raw statistics like mean/std or .describe() outputs
       4. Speculative statements like "may suggest", "could indicate", etc.
+    If the user asks to “describe the dataset” or “give an overview”, respond in a clear, business-friendly way:
 
+    Start with a short paragraph explaining what kind of data this is and what it captures. Start with this sentence "This dataset is derived from Home Mortgage Disclosure Act (HMDA) filings, providing comprehensive insights into residential mortgage applications and lending decisions...". 
+    Mention key themes like loans, applicants, approval status etc.
+    Highlight a few important columns in simple terms (e.g., “loan amount”, “purpose of the loan”, “approval status”, “applicant income”, “applicant ethnicity“, “applicant race").
+
+    Then summarize:
+     1. Total number of records and columns.
+     2. Time period covered in the data (from the activity_year column).
+     3. Most common loan purposes (just top few with %).
+     4. Loan types (basic breakdown).
+     5. Count of approved vs. denied loans.
+
+    Avoid:
+
+      1. A preview sample (first 10 rows using df.head(10)) to give a feel of the data.
+      2. Listing every column or giving technical column names without explanation
+      3. Raw statistics like mean/std or .describe() outputs
+      4. Speculative statements like "may suggest", "could indicate", etc.
+
+    The tone should be helpful, clear, and easy to understand for business users who may not have technical backgrounds.
     The tone should be helpful, clear, and easy to understand for business users who may not have technical backgrounds.
     </approach>
 
@@ -454,8 +474,8 @@ prompts:
       - Avoid scientific notation in outputs.
       - When providing percentages, round to two decimal places and include 
         - Example: 0.5051 → 50.51%
-      - Remove or correct awkward line breaks around symbols (like `\\n$253.62M` → `$253.62M`).
-    3. Do not remove or change Markdown formatting like `**bold**`, `*italic*`, or symbols.
+    3. Dont change the nested bullet points.
+    4. Do not remove or change Markdown formatting like `**bold**`, `*italic*`, or symbols.
       - Just ensure they will render correctly in `st.markdown()`
 
-    Return only the improved answer as a clean, display-ready Markdown string. Use Bullet points and its formatting correctly so that it can be displayed in markdown streamlit UI.
+    Return only the improved answer as a clean, display-ready Markdown string.

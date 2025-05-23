@@ -188,6 +188,27 @@ class BI_Agent:
         response = self.helper_functions["execute_analysis"].invoke(
             {"df": self.dataset, "response_text": llm_response.content}
         )
+        print(colored("formatting", "light_green"))
+        if not response.get("error") and response.get("answer", "").strip():
+            formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
+
+            formatted_answer = Formatting.format_response(
+                prompt=formatting_prompt,
+                answer=response.get("answer", ""),
+                llm=self.llm,
+                table=response.get("table", ""),
+            )
+
+            print(f"before answer \n{response['answer']}")
+            print(f"after answer \n{formatted_answer}")
+
+            # Update answer only if formatting returned something
+            response["answer"] = (
+                formatted_answer.strip()
+                if formatted_answer.strip()
+                else response["answer"]
+            )
+
         return response
         # if response.get("error"):
         #     # here we can call llm when there is error, else we can format as of now returning response
