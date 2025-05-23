@@ -1,8 +1,9 @@
 
-plots/*
-!plots/.gitkeep
+plots/
 data/morigination.xlsx
 data/origination_feats.csv
+data/~$small_data.xlsx
+
 .devcontainer/
 # Byte-compiled / optimized / DLL files
 __pycache__/
