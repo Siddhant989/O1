@@ -10,7 +10,7 @@ class Data:
     def __init__(self):
         print("loading data in data_loader")
         self.data_description_prev = pd.read_csv("./data/origination_feats_up.csv")
-        self.data_description = pd.read_csv("./data/data_description_karthik_copy.csv")
+        self.data_description = pd.read_csv("./data/data_description_latest.csv")
         # excel_data = pd.read_excel("./data/morigination.xlsx", sheet_name="Sheet1")
         excel_data = pd.read_parquet("./data/origination.parquet")
         print("sanitizing")
@@ -21,9 +21,7 @@ class Data:
         print("getting final columns")
         self.data = self.get_final_columns(self.data)
         self.data_sample = self.data.sample(10, random_state=42)
-        # print(self.data.dtypes)
-        # print(self.data["applicant_age"].unique(), self.data["applicant_age"].dtype)
-        # self.data = pd.read_parquet("./data/origination.parquet")
+        # print(self.data["total_units"].unique(), self.data["total_units"].dtype)
         print("data loaded in data loader")
 
     def get_final_columns(self, data):
