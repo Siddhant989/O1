@@ -10,9 +10,31 @@ import html
 import markdown
 from termcolor import colored
 from core.utils import Tools
+import os
 
 # from main import main as experimental_agent_main
 # from experimental_agent.app import main as experimental_agent_main
+
+# Add custom CSS to style the file uploader
+css = '''
+<style>
+    [data-testid='stFileUploader'] {
+        width: max-content;
+    }
+    [data-testid='stFileUploader'] section {
+        padding: 0;
+        float: left;
+    }
+    [data-testid='stFileUploader'] section > input + div {
+        display: none;
+    }
+    [data-testid='stFileUploader'] section + div {
+        float: right;
+        padding-top: 0;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 
 def format_user_bubble(query, timestamp):
@@ -152,7 +174,6 @@ def format_assistant_bubble_typewrite_two(answer: str, typewriter: bool = False)
             bubble_template.format(content=html_answer), unsafe_allow_html=True
         )
 
-
 def show_agentic_chat_interface():
     prompt = None
     data_loaded = st.session_state.get("data_loaded", False)
@@ -179,7 +200,7 @@ def show_agentic_chat_interface():
     if "chat_var" not in st.session_state:
         st.session_state.chat_var = 0
 
-    col1, col2, col3, col4 = st.columns([1.5, 3.5, 1, 1.2])
+    col1, col2, col3, col4, col5 = st.columns([1.5, 3.5, 1, 1.2, 2])
     with col1:
         st.button(
             status,
@@ -187,6 +208,47 @@ def show_agentic_chat_interface():
             help="Static status of data load",
             key="status_button",
         )
+    
+    
+    with col5:
+        uploaded_file = st.file_uploader("Upload File", type=["csv", "xlsx"], label_visibility="collapsed")
+
+        if uploaded_file is not None:
+            filename = uploaded_file.name.lower()
+
+            # Check extension explicitly
+            if filename.endswith(".csv") or filename.endswith(".xlsx"):
+                save_path = os.path.join("data", uploaded_file.name)
+
+                try:
+                    # Save file to 'data' folder
+                    with open(save_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+
+                    # Read file from saved path
+                    if filename.endswith(".csv"):
+                        df = pd.read_csv(save_path)
+                        st.success("✅ CSV file uploaded and saved successfully.")
+                    else:
+                        df = pd.read_excel(save_path)
+                        st.success("✅ Excel file uploaded and saved successfully.")
+
+                    from core.data_loader import NewData
+                    nd = NewData(save_path)
+                    nd.generate_data_description()
+                    st.success("🗂️ Data dictionary generated and saved.")
+
+                    # Save df and flag in session state
+                    st.session_state.uploaded_df = df
+                    st.session_state.data_loaded = True
+
+                except Exception as e:
+                    st.error(f"❌ Error processing file: {e}")
+
+            else:
+                st.error("❌ Only CSV and Excel (.xlsx) files are supported.")
+
+
     with col2:
         if not st.session_state.show_experimental and st.session_state.first_prompt:
             st.markdown(

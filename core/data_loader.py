@@ -4,6 +4,80 @@ import yaml
 import os
 import numpy as np
 from core.config_p import categorical_columns_to_map
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class NewData:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        if file_path.endswith(".csv"):
+            self.df = pd.read_csv(file_path)
+        elif file_path.endswith(".xlsx"):
+            self.df = pd.read_excel(file_path)
+        else:
+            raise ValueError("Unsupported file format")
+
+        # Initialize Gemini model
+        genai.configure(api_key=os.getenv("LLM_API_KEY"))
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
+
+    def get_sampled_values(self, col):
+        values = self.df[col].dropna().astype(str).unique()
+        return values[:10]
+
+    def ask_gemini_description_and_type(self, col_name, sample_values):
+        prompt = f"""
+You are a data expert. Based on the column name and sample values, generate:
+1. A brief, human-readable description of what this column represents.
+2. The logical data type (Numerical, Categorical, Boolean, Date, or Text).
+
+Column Name: {col_name}
+Sample Values: {', '.join(sample_values)}
+
+Return only:
+Description: <description>
+Data Type: <type>
+"""
+
+        try:
+            response = self.model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            print(f"Error getting response from Gemini for column '{col_name}': {e}")
+            return "Description: Unknown\nData Type: Unknown"
+
+    def generate_data_description(self):
+        rows = []
+
+        for idx, col in enumerate(self.df.columns, 1):
+            sample_values = self.get_sampled_values(col)
+            gemini_response = self.ask_gemini_description_and_type(col, sample_values)
+
+            description, data_type = "Unknown", "Unknown"
+            for line in gemini_response.splitlines():
+                if line.lower().startswith("description:"):
+                    description = line.split(":", 1)[1].strip()
+                elif line.lower().startswith("data type:"):
+                    data_type = line.split(":", 1)[1].strip()
+
+            rows.append({
+                "mapping id": idx,
+                "Field Name": col,
+                "Description": description,
+                "Data Type": data_type,
+                "Values": ", ".join(sample_values)
+            })
+
+        dd_df = pd.DataFrame(rows)
+        output_path = "./data/data_description_generated.csv"
+        dd_df.to_csv(output_path, index=False)
+        print(f"Data dictionary saved to {output_path}")
+
+        
+
+
 
 
 class Data:

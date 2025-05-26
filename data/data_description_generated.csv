@@ -1,0 +1,6 @@
+mapping id,Field Name,Description,Data Type,Values
+1,center_id,A numerical identifier for different centers.,Numerical,"11, 13, 124, 66, 94, 64, 129, 139, 88, 143"
+2,city_code,A numerical code representing a specific city.,Numerical,"679, 590, 648, 632, 553, 593, 693, 526, 562, 699"
+3,region_code,A numerical code representing a geographical region.,Numerical,"56, 34, 77, 85, 23, 71, 35, 93"
+4,center_type,"This column indicates the type of center, categorized into TYPE_A, TYPE_B, and TYPE_C.",Categorical,"TYPE_A, TYPE_B, TYPE_C"
+5,op_area,"Operational area, likely representing a measured area in square units (e.g., square meters, acres).",Numerical,"3.7, 6.7, 4.0, 4.1, 3.6, 4.4, 3.9, 2.8, 3.8, 2.4"
