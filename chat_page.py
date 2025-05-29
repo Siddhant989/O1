@@ -200,7 +200,7 @@ def show_agentic_chat_interface():
     if "chat_var" not in st.session_state:
         st.session_state.chat_var = 0
 
-    col1, col2, col3, col4, col5 = st.columns([1.5, 3.5, 1, 1.2, 2])
+    col1, col2, col3, col4 = st.columns([1.5, 3.5, 1, 1.2])
     with col1:
         st.button(
             status,
@@ -210,13 +210,12 @@ def show_agentic_chat_interface():
         )
     
     
-    with col5:
+    with col1:
         uploaded_file = st.file_uploader("Upload File", type=["csv", "xlsx"], label_visibility="collapsed")
 
         if uploaded_file is not None:
             filename = uploaded_file.name.lower()
 
-            # Check extension explicitly
             if filename.endswith(".csv") or filename.endswith(".xlsx"):
                 save_path = os.path.join("data", uploaded_file.name)
 
@@ -225,22 +224,23 @@ def show_agentic_chat_interface():
                     with open(save_path, "wb") as f:
                         f.write(uploaded_file.getbuffer())
 
-                    # Read file from saved path
-                    if filename.endswith(".csv"):
-                        df = pd.read_csv(save_path)
-                        st.success("✅ CSV file uploaded and saved successfully.")
-                    else:
-                        df = pd.read_excel(save_path)
-                        st.success("✅ Excel file uploaded and saved successfully.")
-
-                    from core.data_loader import NewData
+                    # Process the uploaded file using NewData
+                    from core.data_loader import NewData, UploadedData
                     nd = NewData(save_path)
-                    nd.generate_data_description()
-                    st.success("🗂️ Data dictionary generated and saved.")
+                    # nd.generate_data_description()
 
-                    # Save df and flag in session state
-                    st.session_state.uploaded_df = df
+                    # Update session state with new data
+                    st.session_state.uploaded_df = nd.df
+                    st.session_state.data_description_path = "./data/data_description_generated.csv"
+
+                    # Dynamically load the new data into the UploadedData class
+                    st.session_state.data = UploadedData(
+                        uploaded_df=st.session_state.uploaded_df,
+                        data_description_path=st.session_state.data_description_path
+                    )
                     st.session_state.data_loaded = True
+
+                    st.rerun()
 
                 except Exception as e:
                     st.error(f"❌ Error processing file: {e}")
@@ -254,7 +254,7 @@ def show_agentic_chat_interface():
             st.markdown(
                 """
         <div style='text-align:center;padding-top:-1%; margin-top:-1%;'>
-        <h3>Loan Origination Data Analytics Tool</h3>
+        <h3>Mortage Analytics Tool</h3>
         </div>
         """,
                 unsafe_allow_html=True,
@@ -348,12 +348,15 @@ def show_agentic_chat_interface():
             """,
             unsafe_allow_html=True,
         )
-
+    
+    # import pdb; pdb.set_trace()
+    if "data_loaded" not in st.session_state or not st.session_state.data_loaded:
         from core.data_loader import Data
 
-        st.session_state.data = Data()
-        st.session_state.data_loaded = True
-        st.rerun()
+        if "uploaded_df" not in st.session_state:
+            st.session_state.data = Data()
+            st.session_state.data_loaded = True
+            st.rerun()
 
     if "graph_app" not in st.session_state:
         graph = Graph()
@@ -412,7 +415,7 @@ def show_agentic_chat_interface():
         st.markdown(
             """
         <div style='text-align: center;margin-bottom:4%;'>
-        <h2>Origination Data Analytics Tool</h2></div>
+        <h2>Mortage Analytics Tool</h2></div>
         """,
             unsafe_allow_html=True,
         )

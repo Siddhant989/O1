@@ -3,7 +3,7 @@ import re
 import yaml
 import os
 import numpy as np
-from core.config_p import categorical_columns_to_map
+from core.config_p import categorical_columns_to_mapx
 
 
 class Data:

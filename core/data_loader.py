@@ -31,7 +31,7 @@ class NewData:
         prompt = f"""
 You are a data expert. Based on the column name and sample values, generate:
 1. A brief, human-readable description of what this column represents.
-2. The logical data type (Numerical, Categorical, Boolean, Date, or Text).
+2. The logical data type (Numerical, Categorical, Boolean, Date, or Text) from description.
 
 Column Name: {col_name}
 Sample Values: {', '.join(sample_values)}
@@ -50,8 +50,8 @@ Data Type: <type>
 
     def generate_data_description(self):
         rows = []
-
-        for idx, col in enumerate(self.df.columns, 1):
+        max_columns = 5
+        for idx, col in enumerate(self.df.columns[:max_columns], 1):
             sample_values = self.get_sampled_values(col)
             gemini_response = self.ask_gemini_description_and_type(col, sample_values)
 
@@ -75,10 +75,84 @@ Data Type: <type>
         dd_df.to_csv(output_path, index=False)
         print(f"Data dictionary saved to {output_path}")
 
-        
+class UploadedData:
+    def __init__(self, uploaded_df, data_description_path):
+        """
+        Initialize the UploadedData class.
 
+        Args:
+            uploaded_df (pd.DataFrame): The uploaded DataFrame.
+            data_description_path (str): Path to the generated data description.
+        """
+        print("Loading uploaded data in UploadedData class")
+        self.data_description = pd.read_csv(data_description_path)
+        self.data = uploaded_df
+        self.data = self.generate_mapping(self.data, self.data_description)
+        print("Uploaded data processed successfully")
 
+    def generate_mapping(self, data, data_description):
+        """
+        Generate mappings for categorical columns in the uploaded data.
 
+        Args:
+            data (pd.DataFrame): The uploaded DataFrame.
+            data_description (pd.DataFrame): The data description for mapping.
+
+        Returns:
+            pd.DataFrame: The DataFrame with mapped categorical values.
+        """
+        data_description_cat = data_description[
+            data_description["Field Name"].isin(categorical_columns_to_map)
+        ]
+        column_value_dict = {}
+        for _, row in data_description_cat.iterrows():
+            column_name = row["Field Name"].strip()
+            value_str = row["Values"]
+            parsed_values = self.parse_value_string(value_str)
+            if parsed_values:
+                column_value_dict[column_name] = parsed_values
+
+        for col, mapping in column_value_dict.items():
+            if col in data.columns:
+                # Ensure all values are strings for safe replacement
+                data[col] = data[col].astype(str).map(mapping).fillna(data[col])
+                data[col] = data[col].apply(self.safe_upper)
+
+        return data
+
+    def parse_value_string(self, value_str):
+        """
+        Parse a value string into a dictionary.
+
+        Args:
+            value_str (str): The value string to parse.
+
+        Returns:
+            dict: A dictionary mapping codes to descriptions.
+        """
+        mapping = {}
+        if pd.isna(value_str):
+            return mapping
+        # Matches numeric, alphabetic, or alphanumeric codes like '1', 'A', '1A', etc.
+        pattern = re.findall(r"'?([\w\-\.]+)'?\s*[-–]\s*([^,'\n]+)", value_str)
+        for code, desc in pattern:
+            mapping[str(code).strip()] = desc.strip()
+        return mapping
+
+    def safe_upper(self, val):
+        """
+        Convert a value to uppercase safely.
+
+        Args:
+            val: The value to convert.
+
+        Returns:
+            str: The uppercase value or NA if missing.
+        """
+        if pd.isna(val):
+            return pd.NA
+        return str(val).upper()
+    
 
 class Data:
     def __init__(self):

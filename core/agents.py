@@ -95,7 +95,7 @@ class Supervisor:
         prompt_s = ChatPromptTemplate.from_messages(
             [
                 ("system", formatted_prompt),
-                MessagesPlaceholder(variable_name="messages"),
+                MessagesPlaceholder(variable_name="messages"),x
             ]
         )
         supervisor_chain = (
