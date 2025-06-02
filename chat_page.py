@@ -10,6 +10,9 @@ import html
 import markdown
 from termcolor import colored
 from core.utils import Tools
+import os
+import fastparquet
+import pandas as pd
 
 # from main import main as experimental_agent_main
 # from experimental_agent.app import main as experimental_agent_main
@@ -187,6 +190,34 @@ def show_agentic_chat_interface():
             help="Static status of data load",
             key="status_button",
         )
+
+    # with col1:
+    #     uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
+    #     if uploaded_file:
+    #         try:
+    #             # Check file type and load accordingly
+    #             if uploaded_file.name.endswith(".csv"):
+    #                 df = pd.read_csv(uploaded_file, low_memory=False)
+    #             elif uploaded_file.name.endswith(".xlsx"):
+    #                 df = pd.read_excel(uploaded_file)
+    #             else:
+    #                 st.error("Only CSV and Excel files are supported.")
+    #                 st.stop()
+
+    #             # Save to Parquet using fastparquet
+    #             data_folder = os.path.join(os.getcwd(), "data")
+    #             os.makedirs(data_folder, exist_ok=True)  # Ensure the data folder exists
+    #             parquet_path = os.path.join(data_folder, "origination.parquet")
+    #             fastparquet.write(parquet_path, df, compression="snappy", write_index=False)
+
+    #             st.success(f"File successfully converted and saved to {parquet_path}")
+    #             st.session_state.data_loaded = True
+    #             st.rerun()
+    #         except Exception as e:
+    #             st.error(f"Error processing file: {e}")
+    #             st.stop()
+
+        
     with col2:
         if not st.session_state.show_experimental and st.session_state.first_prompt:
             st.markdown(
@@ -287,11 +318,11 @@ def show_agentic_chat_interface():
             unsafe_allow_html=True,
         )
 
-        from core.data_loader import Data
+        # from core.data_loader import Data
 
-        st.session_state.data = Data()
-        st.session_state.data_loaded = True
-        st.rerun()
+        # st.session_state.data = Data()
+        # st.session_state.data_loaded = True
+        # st.rerun()
 
     if "graph_app" not in st.session_state:
         graph = Graph()

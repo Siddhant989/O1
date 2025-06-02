@@ -19,6 +19,7 @@ streamlit-navigation-bar
 duckduckgo-search
 beautifulsoup4
 markdown
+fastparquet
 # aiofiles
 # aiohttp
 # faiss-cpu

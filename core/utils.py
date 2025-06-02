@@ -38,33 +38,53 @@ class Utility:
             return yaml.safe_load(f)
 
     def llm():
-        try:
-            # llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0, convert_system_message_to_human=True)
-            llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",  # Using flash for potentially faster responses
-                # model="gemini-1.5-pro",
-                temperature=0.2,
-                convert_system_message_to_human=True,  # Important for some models
-            )
-            return llm
-        except Exception as e:
-            print(f"Error initializing Google Generative AI model: {e}")
-            print(
-                "Please ensure your API key is valid and you have the necessary permissions."
-            )
-            return None
+        fallback_models = [
+            "gemini-2.0-flash",
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
+            "gemini-1.0-pro"
+        ]
 
-    def ood_llm():
+        for model_name in fallback_models:
+            try:
+                print(f"Trying model: {model_name}")
+                llm_instance = ChatGoogleGenerativeAI(
+                    model=model_name,
+                    temperature=0.2,
+                    convert_system_message_to_human=True
+                )
+                return llm_instance
+            except Exception as e:
+                print(f"[Warning] Failed to load {model_name}: {e}")
+                continue  # Try next model
+
+        print("❌ All fallback models failed. Please check your API key or model access.")
+        return None
+
+
+def ood_llm():
+    fallback_models = [
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-1.0-pro"
+    ]
+
+    for model_name in fallback_models:
         try:
-            ood_llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-flash",  # Using flash for potentially faster responses
+            print(f"Trying OOD model: {model_name}")
+            llm_instance = ChatGoogleGenerativeAI(
+                model=model_name,
                 temperature=0.5,
-                convert_system_message_to_human=True,  # Important for some models
+                convert_system_message_to_human=True
             )
-            return ood_llm
+            return llm_instance
         except Exception as e:
-            print(f"Error initializing Google Generative AI model: {e}")
-            return None
+            print(f"[Warning] Failed to load {model_name}: {e}")
+            continue
+
+    print("❌ All OOD fallback models failed.")
+    return None
+
 
 
 class Helper:
