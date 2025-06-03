@@ -41,23 +41,24 @@ class Data:
 
         data_c["applicant_ethnicity"] = data_c["derived_ethnicity"]
         data_c["applicant_race"] = data_c["derived_race"]
-        data_c["applicant_sex"] = data_c["derived_sex"]
+        data_c["sex"] = data_c["derived_sex"]
         data_c["denial_reason"] = (
             data_c[sorted_denial_reason_columns].bfill(axis=1).iloc[:, 0]
         )
 
+        
         ethnicity_observed_columns_list = ['applicant_ethnicity_observed','co-applicant_ethnicity_observed']
-        data_c["applicant_ethnicity_observed"] = (
+        data_c["ethnicity_observed"] = (
             data_c[ethnicity_observed_columns_list].bfill(axis=1).iloc[:, 0]
         )
 
         race_observed_columns_list = ['applicant_race_observed','co-applicant_race_observed']
-        data_c["applicant_race_observed"] = (
+        data_c["race_observed"] = (
             data_c[race_observed_columns_list].bfill(axis=1).iloc[:, 0]
         )
 
         sex_observed_columns_list = ['applicant_sex_observed','co-applicant_sex_observed']
-        data_c["applicant_sex_observed"] = (
+        data_c["sex_observed"] = (
             data_c[sex_observed_columns_list].bfill(axis=1).iloc[:, 0]
         )
         data_c.drop(
@@ -69,7 +70,7 @@ class Data:
         )
 
         return data_c
-
+    
     @staticmethod
     def format_schema_from_excel(df) -> str:
         # Standardize column names

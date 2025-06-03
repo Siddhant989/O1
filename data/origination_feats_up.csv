@@ -105,7 +105,7 @@ mapping id,Field Name,Description,Data Type,Values
 "
 75,applicant_sex,Sex of the applicant or borrower,String,"1' - Male,'2' - Female,'3' - Information not provided by applicant in mail, internet, or telephone application,'4' - Not applicable,'6' - Applicant selected both male and female"
 76,co-applicant_sex,Sex of the first co-applicant or co-borrower,String,"1' - Male,'2' - Female,'3' - Information not provided by applicant in mail, internet, or telephone application,'4' - Not applicable,'5' - No co-applicant,'6' - Applicant selected both male and female"
-77,applicant_sex_observed,Whether the sex of the applicant or borrower was collected on the basis of visual observation or surname,String,"1' - Male,'2' - Female,'3' - Information not provided by applicant in mail, internet, or telephone application"
+77,applicant_sex_observed,Whether the sex of the applicant or borrower was collected on the basis of visual observation or surname,String,"1' - Collected on the basis of visual observation or surname,'2' - Not collected on the basis of visual observation or surname,'3' - Not applicable,'4' - No co-applicant"
 78,co-applicant_sex_observed,Whether the sex of the first co-applicant or co-borrower was collected on the basis of visual observation or surname,String,"1' - Collected on the basis of visual observation or surname,'2' - Not collected on the basis of visual observation or surname,'3' - Not applicable,'4' - No co-applicant
 "
 79,applicant_age_above_62,Whether the applicant or borrower age is 62 or above,String,"Yes, No, NA"

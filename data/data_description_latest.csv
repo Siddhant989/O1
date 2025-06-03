@@ -67,3 +67,6 @@ mapping id,Field Name,Description,Data Type,Values
 66,tract_owner_occupied_units,"Number of dwellings, including individual condominiums, that are lived in by the owner",Numerical,Varying values
 67,tract_one_to_four_family_homes,Dwellings that are built to houses with fewer than 5 families,Numerical,Varying values
 68,tract_median_age_of_housing_units,Tract median age of homes,Numerical,Varying values
+69,ethnicity_observed,Whether the ethnicity of the applicant or borrower was collected on the basis of visual observation or surname,String,"'COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME', 'NO CO-APPLICANT','NOT APPLICABLE', 'NOT COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME'"
+70,race_observed,Whether the race of the first co-applicant or co-borrower was collected on the basis of visual observation or surname,String,"'COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME', 'NO CO-APPLICANT', 'NOT APPLICABLE', 'NOT COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME'"
+71,sex_observed,Whether the sex of the first co-applicant or co-borrower was collected on the basis of visual observation or surname,String,"'COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME', 'NO CO-APPLICANT', 'NOT APPLICABLE', 'NOT COLLECTED ON THE BASIS OF VISUAL OBSERVATION OR SURNAME'"
