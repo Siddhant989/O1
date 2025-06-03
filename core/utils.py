@@ -16,6 +16,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import tool
 import warnings
+import logging
+import time
 
 warnings.filterwarnings("ignore")
 
@@ -23,6 +25,7 @@ load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv("LLM_API_KEY")
 memory = MemorySaver()
 
+logging.basicConfig(filename="llm_fallback.log", level=logging.WARNING)
 
 class Utility:
     def load_prompts(filepath="prompts.yml"):
@@ -37,28 +40,42 @@ class Utility:
         with open(full_path, "r") as f:
             return yaml.safe_load(f)
 
-    def llm():
+    def llm(max_retries=2, cooldown_seconds=5):
         fallback_models = [
+            "gemini-1.5-flash",
             "gemini-2.0-flash",
             "gemini-1.5-pro",
-            "gemini-1.5-flash",
             "gemini-1.0-pro"
         ]
 
-        for model_name in fallback_models:
-            try:
-                print(f"Trying model: {model_name}")
-                llm_instance = ChatGoogleGenerativeAI(
-                    model=model_name,
-                    temperature=0.2,
-                    convert_system_message_to_human=True
-                )
-                return llm_instance
-            except Exception as e:
-                print(f"[Warning] Failed to load {model_name}: {e}")
-                continue  # Try next model
+        failure_log = {}
 
+        for model_name in fallback_models:
+            for attempt in range(1, max_retries + 1):
+                try:
+                    print(f"🔄 Trying model: {model_name} (Attempt {attempt})")
+                    llm_instance = ChatGoogleGenerativeAI(
+                        model=model_name,
+                        temperature=0.2,
+                        convert_system_message_to_human=True
+                    )
+                    print(f"✅ Loaded model: {model_name}")
+                    return llm_instance  # Success
+                except Exception as e:
+                    error_msg = f"Failed attempt {attempt} for {model_name}: {e}"
+                    print(f"⚠️ {error_msg}")
+                    logging.warning(error_msg)
+                    failure_log.setdefault(model_name, []).append(str(e))
+                    time.sleep(cooldown_seconds)  # cooldown before retrying
+
+        # If all models fail
         print("❌ All fallback models failed. Please check your API key or model access.")
+        print("📄 Failure Summary:")
+        for model, errors in failure_log.items():
+            print(f"🔹 {model}: {len(errors)} failures")
+            for err in errors:
+                print(f"   - {err}")
+
         return None
 
 
