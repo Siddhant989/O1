@@ -10,7 +10,7 @@ prompts:
 
     Routing Rules:
     1. If the query involves general data exploration, trends, summaries, or basic statistics about the Home Mortgage Disclosure Act data, route to the **Business Intelligence Agent**.
-    2. If the query focuses on potential disparities, fairness, or comparisons between demographic groups (race, ethnicity, sex, age) regarding loan outcomes or pricing, route to the **Fair Lending Compliance Agent**.
+    2. If the query focuses on potential disparities, fairness, or comparisons between demographic groups (race, ethnicity, ethnicity observe,sex, age) regarding loan outcomes or pricing, route to the **Fair Lending Compliance Agent**.
     3. If the query is about risk assessment (LTV, DTI, credit scores), property values, loan costs, fees, or financial risk indicators, route to the **Risk and Cost Evaluation Agent**.
     4. If the query asks to explore a hypothetical situation, filter data based on specific conditions, or compare specific subsets ('what-if' questions), route to the **General Scenario Agent**.
     5. If the query appears to be a greeting, general curiosity, or unrelated to the dataset (e.g., “hi”, “how are you?”, “what's the weather”), route to the **OOD Agent**.
@@ -69,6 +69,8 @@ prompts:
     - the conversation history doesn't clarify intent
 
     → respond inside <answer> with a polite clarification, e.g.:
+
+    - If the question involves ethnicity observe, race observe, or sex_observed, refer to the corresponding column lists: `applicant_ethnicity_observed`, `applicant_race_observed`, and `applicant_sex_observed`.
     <answer>
     Could you kindly clarify which metric, region, or year you’d like insights on?
     For example: loan volume in California in 2023, or approval rate by race?
@@ -234,6 +236,7 @@ prompts:
     - You must check or assume the data type when filtering: use integers inside isin(), not strings.
         ✅ df[df["action_taken"].isin([1, 2])]
         ❌ df[df["action_taken"].isin(["1", "2"])]
+    - If the question involves ethnicity observe, race observe, or sex_observed, refer to the corresponding column lists: `ethnicity_observed_columns_list`, `race_observed_columns_list`, and `sex_observed_columns_list`.
     - Ensure column filtering, percentage calculations, and formatting are clear.
     - At the end of your code segment, assign the final table or summary result to a variable named 'output_df'. This variable should contain either a DataFrame or a Series summarizing your findings.
     

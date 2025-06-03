@@ -45,6 +45,21 @@ class Data:
         data_c["denial_reason"] = (
             data_c[sorted_denial_reason_columns].bfill(axis=1).iloc[:, 0]
         )
+
+        ethnicity_observed_columns_list = ['applicant_ethnicity_observed','co-applicant_ethnicity_observed']
+        data_c["applicant_ethnicity_observed"] = (
+            data_c[ethnicity_observed_columns_list].bfill(axis=1).iloc[:, 0]
+        )
+
+        race_observed_columns_list = ['applicant_race_observed','co-applicant_race_observed']
+        data_c["applicant_race_observed"] = (
+            data_c[race_observed_columns_list].bfill(axis=1).iloc[:, 0]
+        )
+
+        sex_observed_columns_list = ['applicant_sex_observed','co-applicant_sex_observed']
+        data_c["applicant_sex_observed"] = (
+            data_c[sex_observed_columns_list].bfill(axis=1).iloc[:, 0]
+        )
         data_c.drop(
             columns=ethnicity_columns
             + race_columns
