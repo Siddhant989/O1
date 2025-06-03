@@ -38,7 +38,7 @@ def format_user_bubble(query, timestamp):
     return f"""
         <style>
         .user-bubble {{
-            background-color: #E9F5FE;
+            background-color: #f5f7fa;
             border-radius: 18px 18px 0px 18px;
             padding: 12px 18px;
             margin: 5px 0px;
@@ -66,13 +66,29 @@ def format_user_bubble(query, timestamp):
         </div>
         """
 
-
 def format_assistant_bubble(answer, timestamp, chart_key=None):
     html_answer = markdown.markdown(answer, extensions=["fenced_code", "tables"])
 
     content = f"""
-    <div style="display: flex; justify-content: flex-start; margin-left:12%;">
-        <div style="padding:10px;border-radius:10px;margin-bottom:5px;max-width:88%;align-self:flex-start;">
+    <div style="
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 12%;
+        margin-right: 8%;
+        margin-top: 20px;
+    ">
+        <div style="
+            background-color: #f5f7fa;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            color: #0A2540;
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        ">
             {html_answer}
         </div>
     </div>
@@ -80,57 +96,94 @@ def format_assistant_bubble(answer, timestamp, chart_key=None):
     return content
 
 
+
 def format_assistant_bubble_typewrite(answer: str, typewriter: bool = False):
     """
-    Displays the assistant's markdown-formatted response inside a styled left-aligned bubble.
-    If typewriter=True, shows the response with a typewriter animation.
-    """
-    container = st.empty()
-
-    bubble_start = """
-    <div style="display: flex; justify-content: flex-start; margin-left:12%;">
-        <div style="color: var(--text-color);padding: 5px; border-radius: 10px;
-                    margin-bottom: 5px; max-width: 88%; align-self: flex-start;">
-    """
-    bubble_end = """
-        </div>
-    </div>
-    """
-    # html_answer = markdown2.markdown(answer)
-    # st.write(html_answer)
-    # st.markdown(html_answer, unsafe_allow_html=True)
-    if typewriter:
-        current = ""
-        for char in answer:
-            current += char
-            container.markdown(
-                bubble_start + current + bubble_end,
-                unsafe_allow_html=True,
-            )
-            time.sleep(0.007)
-        # container.markdown(current, unsafe_allow_html=False)
-    else:
-        container.markdown(bubble_start + answer + bubble_end, unsafe_allow_html=True)
-
-
-def format_assistant_bubble_typewrite_two(answer: str, typewriter: bool = False):
-    """
-    Displays a left-aligned bubble with markdown-formatted assistant response.
-    If typewriter=True, shows animated typing effect.
+    Displays assistant's answer inside a styled `.intro-wrapper`-like rectangular container with optional typewriter effect.
     """
     container = st.empty()
 
     bubble_template = """
-    <div style="display: flex; justify-content: flex-start; margin-left:12%;">
-        <div style="color: var(--text-color);padding: 5px; border-radius: 10px;
-                    margin-bottom: 5px; max-width: 88%; align-self: flex-start;">
+    <div class="intro-wrapper" style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f5f7fa;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 20px;
+        margin-left: 12%;
+        margin-right: 8%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        min-height: 100px;
+        font-family: Arial, sans-serif;
+        color: #0A2540;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    ">
+        {content}
+    </div>
+    """
+
+    def render_markdown_as_html(text: str) -> str:
+        return markdown.markdown(
+            text,
+            extensions=["fenced_code", "tables", "nl2br"]
+        )
+
+    if typewriter:
+        current = ""
+        for char in answer:
+            current += char
+            html_answer = render_markdown_as_html(current)
+            container.markdown(
+                bubble_template.format(content=html_answer),
+                unsafe_allow_html=True
+            )
+            time.sleep(0.007)
+    else:
+        html_answer = render_markdown_as_html(answer)
+        container.markdown(
+            bubble_template.format(content=html_answer),
+            unsafe_allow_html=True
+        )
+
+
+
+
+
+def format_assistant_bubble_typewrite_two(answer: str, typewriter: bool = False):
+    """
+    Displays assistant response in a rectangular .intro-wrapper-like styled container with optional typewriter effect.
+    """
+    container = st.empty()
+
+    bubble_template = """
+    <div style="
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 12%;
+        margin-right: 8%;
+        margin-top: 20px;
+    ">
+        <div style="
+            background-color: #f5f7fa;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            color: #0A2540;
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        ">
             {content}
         </div>
     </div>
     """
 
     def render_markdown_as_html(text: str) -> str:
-
         return markdown.markdown(
             text,
             extensions=[
@@ -146,13 +199,15 @@ def format_assistant_bubble_typewrite_two(answer: str, typewriter: bool = False)
             current += char
             html_answer = render_markdown_as_html(current)
             container.markdown(
-                bubble_template.format(content=html_answer), unsafe_allow_html=True
+                bubble_template.format(content=html_answer),
+                unsafe_allow_html=True
             )
             time.sleep(0.007)
     else:
         html_answer = render_markdown_as_html(answer)
         container.markdown(
-            bubble_template.format(content=html_answer), unsafe_allow_html=True
+            bubble_template.format(content=html_answer),
+            unsafe_allow_html=True
         )
 
 
@@ -182,7 +237,7 @@ def show_agentic_chat_interface():
     if "chat_var" not in st.session_state:
         st.session_state.chat_var = 0
 
-    col1, col2, col3, col4 = st.columns([1.5, 3.5, 1, 1.2])
+    col1, col2, col3 = st.columns([1.5, 3.5, 1])
     with col1:
         st.button(
             status,
@@ -218,18 +273,18 @@ def show_agentic_chat_interface():
     #             st.stop()
 
         
-    with col2:
-        if not st.session_state.show_experimental and st.session_state.first_prompt:
-            st.markdown(
-                """
-        <div style='text-align:center;padding-top:-1%; margin-top:-1%;'>
-        <h3>Loan Origination Data Analytics Tool</h3>
-        </div>
-        """,
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown("""""")
+    # with col2:
+    #     if not st.session_state.show_experimental and st.session_state.first_prompt:
+    #         st.markdown(
+    #             """
+    #     # <div style='text-align:center;padding-top:-1%; margin-top:-1%;'>
+    #     # <h3>Loan Origination Data Analytics Tool</h3>
+    #     # </div>
+    #     """,
+    #             unsafe_allow_html=True,
+    #         )
+    #     else:
+    #         st.markdown("""""")
     with col3:
         if not st.session_state.show_experimental:
             if st.button(
@@ -256,15 +311,15 @@ def show_agentic_chat_interface():
                         )
 
                 st.rerun()
-    with col4:
-        toggle_label = (
-            "🧪 Experimental Agent"
-            if not st.session_state.show_experimental
-            else "Origination Tool"
-        )
-        if st.button(toggle_label, key="toggle_button"):
-            st.session_state.show_experimental = st.session_state.show_experimental
-            st.rerun()
+    # with col4:
+    #     toggle_label = (
+    #         "🧪 Experimental Agent"
+    #         if not st.session_state.show_experimental
+    #         else "Origination Tool"
+    #     )
+    #     if st.button(toggle_label, key="toggle_button"):
+    #         st.session_state.show_experimental = st.session_state.show_experimental
+    #         st.rerun()
 
     # If experimental agent is toggled, show the experimental agent interface
     # if st.session_state.show_experimental:
@@ -349,7 +404,7 @@ def show_agentic_chat_interface():
                             img, caption="Generated Chart", use_container_width=False
                         )
 
-            # 🧾 Table toggle aligned next to it
+                # 🧾 Table toggle aligned next to it
             with col3:
                 if (
                     table is not None
@@ -377,14 +432,14 @@ def show_agentic_chat_interface():
 
     elif st.session_state.first_prompt is None:
         # --- Centered Input Prompt (when chat is empty) ---
-        st.markdown("<div style='margin-top: 5vh;'></div>", unsafe_allow_html=True)
-        st.markdown(
-            """
-        <div style='text-align: center;margin-bottom:4%;'>
-        <h2>Origination Data Analytics Tool</h2></div>
-        """,
-            unsafe_allow_html=True,
-        )
+        # st.markdown("<div style='margin-top: 5vh;'></div>", unsafe_allow_html=True)
+        # st.markdown(
+        #     """
+        # # <div style='text-align: center;margin-bottom:4%;'>
+        # # <h2>Origination Data Analytics Tool</h2></div>
+        # """,
+        #     unsafe_allow_html=True,
+        # )
         st.markdown(
             "<div style='text-align: center; font-size: 20px; color: gray; margin-top:-10px;'>What I can help with 👇</div>",
             unsafe_allow_html=True,
@@ -477,8 +532,8 @@ def show_agentic_chat_interface():
                         answer,
                         typewriter=True,
                     )
-                    col1, col2, col3 = st.columns([1, 3, 4])
-                    # st.write(chart_key)
+                    col1, col2,col3 = st.columns([1, 3, 4])
+                    st.write(chart_key)
                     with col2:
                         if chart_path and chart_key:
                             # toggle_key = f"show_chart_{toggle_key}"
