@@ -173,7 +173,7 @@ if not st.session_state.data_loaded:
             parquet_path = os.path.join(data_folder, "Origination.parquet")
             fastparquet.write(parquet_path, df, compression="snappy", write_index=False)
 
-            st.success("✅ File successfully uploaded and saved as Parquet.")
+            st.success("✅ File successfully uploaded.")
             st.session_state.data = Data()
             st.session_state.data_loaded = True
             st.rerun()# Set page configuration

@@ -28,10 +28,21 @@ class Data:
     def get_final_columns(self, data):
         data_c = data.copy()
         ethnicity_columns = [
-            col for col in data_c.columns if "ethnicity" in col.lower()
+            col
+            for col in data_c.columns
+            if "ethnicity" in col.lower() and not col.lower().endswith("_observed")
         ]
-        race_columns = [col for col in data_c.columns if "race" in col.lower()]
-        sex_columns = [col for col in data_c.columns if "sex" in col.lower()]
+        race_columns = [
+            col
+            for col in data_c.columns
+            if "race" in col.lower() and not col.lower().endswith("_observed")
+        ]
+        sex_columns = [
+            col
+            for col in data_c.columns
+            if "sex" in col.lower() and not col.lower().endswith("_observed")
+        ]
+        
         denial_reason_columns = [
             col for col in data_c.columns if "denial_reason" in col.lower()
         ]

@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import io
 from IPython.display import display, Image
 import re
 import uuid
@@ -168,47 +169,55 @@ class Formatting:
     @staticmethod
     def format_response(prompt, answer, table, llm):
         try:
+            prompts = Utility.load_prompts()
+            table_prompt = prompts["prompts"]["Table_Formatting"]
             FORMATTER_PROMPT = PromptTemplate.from_template(prompt)
+            TABLE_PROMPT = PromptTemplate.from_template(table_prompt)
             formatted_response = llm.invoke(
                 FORMATTER_PROMPT.format(original_answer=answer, table_data=table)
             )
-
+            print("calling llm for table")
+            formatted_table = llm.invoke(TABLE_PROMPT.format(table_data=table))
             respons = formatted_response.content
-            # cleaned = re.sub(r"^```(?:python)?\s*", "", respons.strip())
-            # cleaned = re.sub(r"```$", "", cleaned.strip())
+            table = Formatting.parse_table_from_code_block(
+                formatted_table.content.strip()
+            )
+            if table is not False:
+                return respons, table
 
-            # # Safely evaluate to a dictionary
-            # ans = ast.literal_eval(cleaned)
-            # respons = Formatting.insert_newlines_for_markdown(respons)
-            return respons
+            return respons, None
         except Exception as e:
             print(colored(f"Exception in formatting: {str(e)}", "light_yellow"))
+            print(traceback.print_exc())
             return answer
 
-    @staticmethod
-    def normalize_markdown(text: str) -> str:
-        # Ensure there's exactly one line break before checkmarks (✓), dashes (-), asterisks (*)
-        text = re.sub(r"\n*([✓*-])", r"\n\1", text)
+    def parse_table_from_code_block(table_str):
+        try:
+            if not isinstance(table_str, str):
+                return False
 
-        # Remove double/triple newlines
-        text = re.sub(r"\n{3,}", "\n\n", text)
+            # Remove any Markdown-style code block wrapper (```python, ```json, or just ```)
+            table_str = table_str.strip()
+            pattern = r"^```(?:json|python)?\s*([\s\S]+?)\s*```$"
+            match = re.match(pattern, table_str)
 
-        # Trim leading/trailing newlines
-        text = text.strip()
+            if match:
+                table_str = match.group(1).strip()  # Extract just the table content
 
-        return text
+            # Attempt to parse Python-style list of dictionaries
+            table_data = ast.literal_eval(table_str)
 
-    def insert_newlines_for_markdown(text: str) -> str:
-        # Add newline before ✓ or ✗ if not already on a new line
-        text = re.sub(r"(?<!\n)([✓✗])", r"\n\1", text)
+            if isinstance(table_data, list) and all(
+                isinstance(row, dict) for row in table_data
+            ):
+                return pd.DataFrame(table_data)
 
-        # Add newline before asterisks for markdown bullets or emphasis (but not mid-word italics)
-        text = re.sub(r"(?<!\n)(\*{1,2})(?=\s)", r"\n\1", text)
+            print("Parsed result is not a list of dictionaries.")
+            return False
 
-        # Remove accidental multiple newlines
-        text = re.sub(r"\n{3,}", "\n\n", text)
-
-        return text.strip()
+        except Exception as e:
+            print(f"Error parsing table string: {e}")
+            return False
 
 
 @tool

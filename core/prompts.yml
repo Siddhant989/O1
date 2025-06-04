@@ -10,7 +10,7 @@ prompts:
 
     Routing Rules:
     1. If the query involves general data exploration, trends, summaries, or basic statistics about the Home Mortgage Disclosure Act data, route to the **Business Intelligence Agent**.
-    2. If the query focuses on potential disparities, fairness, or comparisons between demographic groups (race, ethnicity,sex, age) regarding loan outcomes or pricing, route to the **Fair Lending Compliance Agent**.
+    2. If the query focuses on potential disparities, fairness, or comparisons between demographic groups (race, ethnicity, sex, age) regarding loan outcomes or pricing, route to the **Fair Lending Compliance Agent**.
     3. If the query is about risk assessment (LTV, DTI, credit scores), property values, loan costs, fees, or financial risk indicators, route to the **Risk and Cost Evaluation Agent**.
     4. If the query asks to explore a hypothetical situation, filter data based on specific conditions, or compare specific subsets ('what-if' questions), route to the **General Scenario Agent**.
     5. If the query appears to be a greeting, general curiosity, or unrelated to the dataset (e.g., “hi”, “how are you?”, “what's the weather”), route to the **OOD Agent**.
@@ -69,8 +69,6 @@ prompts:
     - the conversation history doesn't clarify intent
 
     → respond inside <answer> with a polite clarification, e.g.:
-
-   
     <answer>
     Could you kindly clarify which metric, region, or year you’d like insights on?
     For example: loan volume in California in 2023, or approval rate by race?
@@ -116,6 +114,7 @@ prompts:
     - Filters and processes the data cleanly
     - Assigns final output to `output_df`
     - Do NOT use placeholder values like `[value from output_df]` or assume `output_df` is already defined.
+    - Do NOT use `df.append(...)`. This method has been removed in recent versions of pandas.
     - Format all numeric values in `output_df` using **Million (M)** and **Billion (B)** notation based on their magnitude for improved readability.
     - change column names in human reading format, remove underscore and capital the first letter of each word
       - Example: 
@@ -126,6 +125,9 @@ prompts:
 
     Then, include chart code inside <chart> tags to visualize the result:
     - Use only: pandas, matplotlib, seaborn
+    - Before plotting the chart, always remove rows where the category or label column contains:
+      - "Missing", "Unknown", "Not Applicable", or "Not Available" (case-insensitive)
+    - These values must not appear in the chart axis labels, bars, or legends.
     - The chart must be readable and business-friendly:
         - Set clear titles, axis labels, and legends (if applicable)
         - Rotate tick labels if overlapping (if needed)
@@ -232,25 +234,29 @@ prompts:
     - You must ONLY use the column names provided in the <data_description> above.
     - DO NOT use any column that is not explicitly listed — even if it seems familiar or common.
     - Every column you use in code must appear in the schema.
-    - Many categorical columns (e.g., action_taken, preapproval, loan_type) may be listed as "Alphanumeric" but are stored as numeric codes (e.g., integers 1, 2, 3).
-    - You must check or assume the data type when filtering: use integers inside isin(), not strings.
-        ✅ df[df["action_taken"].isin([1, 2])]
-        ❌ df[df["action_taken"].isin(["1", "2"])]
-    - Ensure column filtering, percentage calculations, and formatting are clear.
+    - Format all numeric values in `output_df` using **Million (M)** and **Billion (B)** notation based on their magnitude for improved readability.
+    - change column names in human reading format, remove underscore and capital the first letter of each word
+      - Example: 
+        - "total_application" -> "Total Application"
+        - "approval_rate" -> "Approval Rate"
+        - "applicant_race" -> "Applicant Race"
     - At the end of your code segment, assign the final table or summary result to a variable named 'output_df'. This variable should contain either a DataFrame or a Series summarizing your findings.
-    
 
     Next, generate a plot inside <chart> tags to illustrate any disparities:
-    - Import:
-        import pandas as pd
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-    - Use:
-        plt.figure(figsize=(8, 5))
-        sns.set_palette('pastel')
-    - Plot barplots or boxplots grouped by the protected class.
-    - Add data labels, title, and rotate x-axis labels if needed.
-    - Save the chart using plt.tight_layout()
+    - Use only: pandas, matplotlib, seaborn
+    - The chart must be readable and business-friendly:
+        - Set clear titles, axis labels, and legends (if applicable)
+        - Rotate tick labels if overlapping (if needed)
+        - Add data labels directly on bars or points (when applicable)
+        - Use appropriate color schemes to highlight comparisons or categories
+        - Format all numeric values (axis ticks and labels) using **Million (M)** and **Billion (B)** notation if the numbers are large, for better readability
+    - Choose appropriate chart types based on the analysis:
+        - `sns.barplot()` – for grouped comparisons
+        - `sns.lineplot(marker="o")` – for trends over time or ordered categories
+        - `sns.histplot()` – for distributions
+        - `sns.boxplot()` – for showing spread or outliers
+    - Avoid clutter: limit the number of bars/categories per chart to improve readability
+    - Always ensure chart is clear without needing the data table
 
     Finally, provide a brief natural language summary of your findings inside <answer> tags.
     - Clearly state whether disparities are present and which groups are most affected.
@@ -332,21 +338,27 @@ prompts:
         ❌ df[df["action_taken"].isin(["1", "2"])]
     - Include filtering, thresholding, and risk classification logic
     - Ensure numeric fields are cleaned using `pd.to_numeric(..., errors='coerce')` if needed
+    - change column names in human reading format, remove underscore and capital the first letter of each word
+      - Example: 
+        - "action_taken" -> "Action Taken"
+        - "applicant_age" -> "Applicant Age"
     - At the end of your code segment, assign the final table or summary result to a variable named 'output_df'. This variable should contain either a DataFrame or a Series summarizing your findings.
 
     Generate a visualization inside <chart> tags that highlights cost or risk levels:
-    - Use:
-        import pandas as pd
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-    - Styling:
-        plt.figure(figsize=(8, 5))
-        sns.set_theme(style="whitegrid")
-        sns.set_palette('pastel')
-    - Chart ideas:
-        - Risk category counts by bar chart
-        - Boxplot of interest rates by income group
-        - Distribution of LTV or DTI using histplot
+    - Use only: pandas, matplotlib, seaborn
+    - The chart must be readable and business-friendly:
+        - Set clear titles, axis labels, and legends (if applicable)
+        - Rotate tick labels if overlapping (if needed)
+        - Add data labels directly on bars or points (when applicable)
+        - Use appropriate color schemes to highlight comparisons or categories
+        - Format all numeric values (axis ticks and labels) using **Million (M)** and **Billion (B)** notation if the numbers are large, for better readability
+    - Choose appropriate chart types based on the analysis:
+        - `sns.barplot()` – for grouped comparisons
+        - `sns.lineplot(marker="o")` – for trends over time or ordered categories
+        - `sns.histplot()` – for distributions
+        - `sns.boxplot()` – for showing spread or outliers
+    - Avoid clutter: limit the number of bars/categories per chart to improve readability
+    - Always ensure chart is clear without needing the data table
 
     Finally, summarize your findings inside <answer> tags.
     - Mention which groups or profiles are highest risk
@@ -423,20 +435,28 @@ prompts:
     - Use `df` for the original data and create `df_scenario` as the modified version
     - You must ONLY use the column names provided in the <data_description> above.
     - DO NOT use any column that is not explicitly listed — even if it seems familiar or common.
+    - change column names in human reading format, remove underscore and capital the first letter of each word
+      - Example: 
+        - "action_taken" -> "Action Taken"
+        - "applicant_age" -> "Applicant Age"
     - At the end of your code segment, assign the final table or summary result to a variable named 'output_df'. This variable should contain either a DataFrame or a Series summarizing your findings
     - Avoid hardcoding sensitive thresholds unless specified by user
 
     Generate a visualization inside <chart> tags:
-    - Compare the baseline vs scenario metric side by side
-    - Use:
-        import pandas as pd
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-    - Style:
-        plt.figure(figsize=(8, 5))
-        sns.set_theme(style="whitegrid")
-        sns.set_palette('pastel')
-        plt.tight_layout()
+    - Use only: pandas, matplotlib, seaborn
+    - The chart must be readable and business-friendly:
+        - Set clear titles, axis labels, and legends (if applicable)
+        - Rotate tick labels if overlapping (if needed)
+        - Add data labels directly on bars or points (when applicable)
+        - Use appropriate color schemes to highlight comparisons or categories
+        - Format all numeric values (axis ticks and labels) using **Million (M)** and **Billion (B)** notation if the numbers are large, for better readability
+    - Choose appropriate chart types based on the analysis:
+        - `sns.barplot()` – for grouped comparisons
+        - `sns.lineplot(marker="o")` – for trends over time or ordered categories
+        - `sns.histplot()` – for distributions
+        - `sns.boxplot()` – for showing spread or outliers
+    - Avoid clutter: limit the number of bars/categories per chart to improve readability
+    - Always ensure chart is clear without needing the data table
 
     Finally, summarize the impact of the scenario in plain language inside <answer> tags.
     - Be sure to highlight what changed, how it affected the outcome, and which groups were most impacted.
@@ -507,13 +527,15 @@ prompts:
     ### Table Data:
     {table_data}
 
+    ---
+
     ### Instructions:
     1. If the original answer is vague or says things like "see the chart", "in the table", "The output_df shows" or references a table like "`output_df`" rewrite it clearly using the table. 
       If the original answer contains generic chart text like:
         - “The chart shows...”
         - “The x-axis represents...”
         - “The top 10 counties...”
-        **Remove it** and instead describe the actual insight from the table values.
+        **Remove it** and instead describe the actual insight from the table values except "Not Available","Unknown", "Missing" or "Not Applicable".
       If the table is bigger then 10 rows just give details about the table.
 
     2. Fix formatting issues:
@@ -536,7 +558,20 @@ prompts:
         - For example, use **Debt-to-income ratio**, not **Debt-to-income ratio\n**
       - Do NOT insert newlines inside bold markers (`**...**`).
         For example, write **Denial reason 3**, not **Denial reason\n3** or **3\n**
+      - If the table contains values like "Not Applicable", "Missing", or "Unknown":
+        - Include a clearly marked **Note** at the end of the answer summarizing their presence.
+        - Example:  
+          **Note:** There are some records with missing or unknown values (e.g., 124 marked as "Unknown", 87 as "Not Applicable").
       - Just ensure they will render correctly in `st.markdown()`
+    
+    4. **Handling Missing or Unknown Values**  
+    If the table contains values like `"Not Availabe"`, `"Not Applicable"`, `"Missing"`, `"Unknown"`, or similar:
+    - Do NOT include these values in the main insights or bullet points.
+    - Instead, place a clearly marked **Note** at the **very end of the answer**, separate from the main analysis. 
+    - Example:  
+      **Note:** There are some records with missing or unknown values (e.g., 124 marked as "Unknown", 87 as "Not Applicable").
+
+    ---
 
     **INCORRECT formatting example (DO NOT DO THIS):**
       * **Credit history
@@ -545,5 +580,52 @@ prompts:
     **CORRECT formatting example:**
       * **Credit history** is another significant factor
 
-    If the table is not available, do not add anything just return the response as it is.
+    If no table is available, return the original answer as-is.
     Return only the improved answer as a clean, display-ready Markdown string.
+
+  Table_Formatting: |
+    You are a table-cleaning assistant. Your job is to take raw table-like data and clean it for presentation and further analysis.
+
+    The input is a table with various columns and rows, some of which may contain unhelpful labels or categories that should be removed.
+
+    <table_data>
+    {table_data}
+    </table_data>
+
+    Follow these strict rules when processing:
+
+    ---
+
+    **Step 1: Remove Unhelpful Rows**
+    - Exclude any row where the label or category column contains one of these (case-insensitive):
+      - "Unknown"
+      - "Missing"
+      - "Not Applicable"
+      - "N/A"
+      - "nan"
+    - These rows should NOT appear in the final table output.
+    - All other rows should be preserved exactly as they are.
+    ---
+
+    **Step 2: Return Format**
+    - Output the cleaned table strictly as a **Python-style list of dictionaries**.
+    - Do **NOT** include any markdown (e.g., ` ```json ` or ` ``` `)
+    - Do **NOT** return the result as HTML
+    - Do **NOT** add any introductory sentence, explanation, or summary — return **only the list**
+
+      - Example:
+        [
+          {{"Applicant Age": "25-34", "Count": 524}},
+          {{"Applicant Age": "35-44", "Count": 855}}
+        ]
+
+    **Final Rules**
+    - If all rows are filtered out, return: `[]`
+    - Do not rename or reword any keys or values
+    - Do not wrap the output in quotes or string form — it must be a literal Python list of dictionaries
+
+    ---
+    Now return only the cleaned table.
+    """
+
+   
