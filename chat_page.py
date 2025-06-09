@@ -448,51 +448,88 @@ def show_agentic_chat_interface():
                     )
                     col1, col2, col3 = st.columns([1, 3, 4])
                     # st.write(chart_key)
+                    # with col2:
+                    #     if chart_path and chart_key:
+                    #         # toggle_key = f"show_chart_{toggle_key}"
+                    #         if toggle_key not in st.session_state:
+                    #             st.session_state[toggle_key] = False
+                    #         if st.toggle(
+                    #             (
+                    #                 "📊 Show Chart"
+                    #                 if not st.session_state[toggle_key]
+                    #                 else "❌ Hide Chart"
+                    #             ),
+                    #             key=chart_key,
+                    #         ):
+                    #             st.session_state[toggle_key] = not st.session_state[
+                    #                 toggle_key
+                    #             ]
+                    #         if st.session_state[toggle_key]:
+                    #             img = Image.open(chart_path)
+                    #             st.image(
+                    #                 img,
+                    #                 caption="Generated Chart",
+                    #                 use_container_width=False,
+                    #             )
                     with col2:
                         if chart_path and chart_key:
-                            # toggle_key = f"show_chart_{toggle_key}"
-                            if toggle_key not in st.session_state:
-                                st.session_state[toggle_key] = False
-                            if st.toggle(
+                            toggle_key = f"show_chart_{chart_key}"
+
+                            show_chart = st.toggle(
                                 (
                                     "📊 Show Chart"
-                                    if not st.session_state[toggle_key]
+                                    if not st.session_state.get(toggle_key, False)
                                     else "❌ Hide Chart"
                                 ),
-                                key=chart_key,
-                            ):
-                                st.session_state[toggle_key] = not st.session_state[
-                                    toggle_key
-                                ]
-                            if st.session_state[toggle_key]:
+                                key=toggle_key,
+                            )
+
+                            if show_chart:
                                 img = Image.open(chart_path)
                                 st.image(
                                     img,
-                                    caption="Generated Chart",
                                     use_container_width=False,
                                 )
                     # print("table")
                     with col3:
+                        # if (
+                        #     table is not None
+                        #     and isinstance(table, pd.DataFrame)
+                        #     and not table.empty
+                        # ):
+                        #     # table_toggle_key = f"show_table_{chart_key}"
+                        #     if table_toggle_key not in st.session_state:
+                        #         st.session_state[table_toggle_key] = False
+                        #     if st.toggle(
+                        #         (
+                        #             "🧾 Show Table"
+                        #             if not st.session_state[table_toggle_key]
+                        #             else "❌ Hide Table"
+                        #         ),
+                        #         key=table_toggle_key + "_toggle",
+                        #     ):
+                        #         st.session_state[table_toggle_key] = (
+                        #             not st.session_state[table_toggle_key]
+                        #         )
+                        #     if st.session_state[table_toggle_key]:
+                        #         st.dataframe(table)
                         if (
                             table is not None
                             and isinstance(table, pd.DataFrame)
                             and not table.empty
                         ):
-                            # table_toggle_key = f"show_table_{chart_key}"
-                            if table_toggle_key not in st.session_state:
-                                st.session_state[table_toggle_key] = False
-                            if st.toggle(
+                            table_toggle_key = f"show_table_{chart_key}"
+
+                            show_table = st.toggle(
                                 (
                                     "🧾 Show Table"
-                                    if not st.session_state[table_toggle_key]
+                                    if not st.session_state.get(table_toggle_key, False)
                                     else "❌ Hide Table"
                                 ),
-                                key=table_toggle_key + "_toggle",
-                            ):
-                                st.session_state[table_toggle_key] = (
-                                    not st.session_state[table_toggle_key]
-                                )
-                            if st.session_state[table_toggle_key]:
+                                key=table_toggle_key,
+                            )
+
+                            if show_table:
                                 st.dataframe(table)
 
     # Auto-scroll to latest
