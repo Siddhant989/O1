@@ -21,16 +21,26 @@ class Data:
         print("getting final columns")
         self.data = self.get_final_columns(self.data)
         self.data_sample = self.data.sample(10, random_state=42)
-        # print(self.data["total_units"].unique(), self.data["total_units"].dtype)
+        # print(self.data["sex"].unique())
         print("data loaded in data loader")
 
     def get_final_columns(self, data):
         data_c = data.copy()
         ethnicity_columns = [
-            col for col in data_c.columns if "ethnicity" in col.lower()
+            col
+            for col in data_c.columns
+            if "ethnicity" in col.lower() and not col.lower().endswith("_observed")
         ]
-        race_columns = [col for col in data_c.columns if "race" in col.lower()]
-        sex_columns = [col for col in data_c.columns if "sex" in col.lower()]
+        race_columns = [
+            col
+            for col in data_c.columns
+            if "race" in col.lower() and not col.lower().endswith("_observed")
+        ]
+        sex_columns = [
+            col
+            for col in data_c.columns
+            if "sex" in col.lower() and not col.lower().endswith("_observed")
+        ]
         denial_reason_columns = [
             col for col in data_c.columns if "denial_reason" in col.lower()
         ]
@@ -40,7 +50,7 @@ class Data:
 
         data_c["applicant_ethnicity"] = data_c["derived_ethnicity"]
         data_c["applicant_race"] = data_c["derived_race"]
-        data_c["applicant_sex"] = data_c["derived_sex"]
+        data_c["sex"] = data_c["derived_sex"]
         data_c["denial_reason"] = (
             data_c[sorted_denial_reason_columns].bfill(axis=1).iloc[:, 0]
         )

@@ -1,5 +1,5 @@
 mapping id,Field Name,Description,Data Type,Values
-1,activity_year,The calendar year the data submission covers,Numerical,"2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024"
+1,activity_year,The calendar year the data submission covers,Numerical,2023
 2,lei,A financial institution's Legal Entity Identifier,Categorical,"Varying values (e.g., ...)"
 3,derived_msa-md,"The 5 digit derived MSA (metropolitan statistical area) or MD (metropolitan division) code. An MSA/MD is an area that has at least one urbanized area of 50,000 or more population.",String,Varying values
 4,state_code,Two-letter state code,String,Varying values
@@ -10,7 +10,7 @@ mapping id,Field Name,Description,Data Type,Values
 9,conforming_loan_limit,Indicates whether the reported loan amount exceeds the GSE (government sponsored enterprise) conforming loan limit,String,"'CONFORMING', 'NONCONFORMING', 'UNDETERMINED', 'NOT APPLICABLE'"
 10,applicant_ethnicity,Single aggregated ethnicity categorization derived from applicant/borrower and co-applicant/co-borrower ethnicity fields,Categorical,"Hispanic or Latino, Not Hispanic or Latino, Joint, Ethnicity Not Available, Free Form Text Only"
 11,applicant_race,Single aggregated race categorization derived from applicant/borrower and co-applicant/co-borrower race fields,Categorical,"American Indian or Alaska Native, Asian, Black or African American, Native Hawaiian or Other Pacific Islander, White, 2 or more minority races, Joint, Free Form Text Only, Race Not Available"
-12,applicant_sex,Single aggregated sex categorization derived from applicant/borrower and co-applicant/co-borrower sex fields,Categorical,"Male, Female, Joint, Sex Not Available"
+12,sex,Single aggregated sex categorization derived from applicant/borrower and co-applicant/co-borrower sex fields,Categorical,"Male, Female, Joint, Sex Not Available"
 13,action_taken,The action taken on the covered loan or application,String,"'APPLICATION APPROVED BUT NOT ACCEPTED', 'APPLICATION DENIED', 'APPLICATION WITHDRAWN BY APPLICANT', 'FILE CLOSED FOR INCOMPLETENESS', 'LOAN ORIGINATED', 'PREAPPROVAL REQUEST APPROVED', 'PREAPPROVAL REQUEST DENIED', 'PURCHASED LOAN'"
 14,purchaser_type,Type of entity purchasing a covered loan from the institution,String,"'COMMERCIAL BANK', 'FANNIE MAE', 'FREDDIE MAC', 'GINNIE MAE', 'NOT APPLICABLE'"
 15,preapproval,Whether the covered loan or application involved a request for a preapproval of a home purchase loan under a preapproval program,String,"'PREAPPROVAL NOT REQUESTED', 'PREAPPROVAL REQUESTED'"
@@ -67,3 +67,6 @@ mapping id,Field Name,Description,Data Type,Values
 66,tract_owner_occupied_units,"Number of dwellings, including individual condominiums, that are lived in by the owner",Numerical,Varying values
 67,tract_one_to_four_family_homes,Dwellings that are built to houses with fewer than 5 families,Numerical,Varying values
 68,tract_median_age_of_housing_units,Tract median age of homes,Numerical,Varying values
+69,applicant_ethnicity_observed,Whether the ethnicity of the applicant or borrower was collected on the basis of visual observation or surname,String,"Collected on the basis of visual observation or surname','Not collected on the basis of visual observation or surname','Not applicable'"
+70,applicant_race_observed,Whether the race of the applicant or borrower was collected on the basis of visual observation or surname,String,"Collected on the basis of visual observation or surname','Not collected on the basis of visual observation or surname','Not applicable'"
+71,applicant_sex_observed,Whether the race of the applicant or borrower was collected on the basis of visual observation or surname,String,"Collected on the basis of visual observation or surname','Not collected on the basis of visual observation or surname','Not applicable'"
