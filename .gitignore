@@ -38,4 +38,5 @@ htmlcov/
 *.log
 faiss_index/
 origination.ipynb
+data_handling.ipynb
 extra.txt
