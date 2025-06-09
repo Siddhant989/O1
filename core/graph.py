@@ -143,7 +143,6 @@ class Graph:
         while retry_no < max_retries:
             # Check if both are generated
             answer = response.get("answer", "").strip()
-            print(f"answer:{answer}")
             res_error = response.get("error")
             if len(answer) == 0:
                 res_error = True
@@ -182,7 +181,7 @@ class Graph:
 
             # Helper.display_saved_plot(response["figure"])
         if "table" in response and isinstance(response["table"], pd.DataFrame):
-            print(colored("table found", "red"))
+            print(colored("table found", "cyan"))
             response["table"] = response["table"].to_dict()
 
         approach = response.get("approach") or "[No approach provided]"
