@@ -1,4 +1,4 @@
-import os
+import pandas as pd
 import re
 import warnings
 from dotenv import load_dotenv
@@ -196,7 +196,7 @@ class BI_Agent:
             print(colored("formatting", "light_green"))
             formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
 
-            formatted_answer = Formatting.format_response(
+            formatted_answer, table = Formatting.format_response(
                 prompt=formatting_prompt,
                 answer=response.get("answer", ""),
                 llm=self.llm,
@@ -212,6 +212,9 @@ class BI_Agent:
                 if formatted_answer.strip()
                 else response["answer"]
             )
+            if isinstance(table, pd.DataFrame) and not table.empty:
+                print(colored("formatter returned table", "light_yellow"))
+                response["table"] = table
 
         return response
 
@@ -291,7 +294,7 @@ class FairLendingAgent:
                 print(colored("formatting", "light_green"))
                 formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
 
-                formatted_answer = Formatting.format_response(
+                formatted_answer, table = Formatting.format_response(
                     prompt=formatting_prompt,
                     answer=response.get("answer", ""),
                     llm=self.llm,
@@ -304,6 +307,9 @@ class FairLendingAgent:
                     if formatted_answer.strip()
                     else response["answer"]
                 )
+                if isinstance(table, pd.DataFrame) and not table.empty:
+                    print(colored("formatter returned table", "light_yellow"))
+                    response["table"] = table
             return response
 
     def __repr__(self):
@@ -361,7 +367,7 @@ class RiskEvaluationAgent:
             print(colored("formatting", "light_green"))
             formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
 
-            formatted_answer = Formatting.format_response(
+            formatted_answer, table = Formatting.format_response(
                 prompt=formatting_prompt,
                 answer=response.get("answer", ""),
                 llm=self.llm,
@@ -377,6 +383,9 @@ class RiskEvaluationAgent:
                 if formatted_answer.strip()
                 else response["answer"]
             )
+            if isinstance(table, pd.DataFrame) and not table.empty:
+                print(colored("formatter returned table", "light_yellow"))
+                response["table"] = table
         return response
 
     def __repr__(self):
@@ -434,7 +443,7 @@ class ScenarioSimulationAgent:
             print(colored("formatting", "light_green"))
             formatting_prompt = self.prompt_s["prompts"]["Formatting_Prompt"]
 
-            formatted_answer = Formatting.format_response(
+            formatted_answer, table = Formatting.format_response(
                 prompt=formatting_prompt,
                 answer=response.get("answer", ""),
                 llm=self.llm,
@@ -450,6 +459,9 @@ class ScenarioSimulationAgent:
                 if formatted_answer.strip()
                 else response["answer"]
             )
+            if isinstance(table, pd.DataFrame) and not table.empty:
+                print(colored("formatter returned table", "light_yellow"))
+                response["table"] = table
         return response
 
     def __repr__(self):
